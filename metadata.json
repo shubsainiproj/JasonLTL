@@ -1,0 +1,6 @@
+{
+  "name": "Jason LTL",
+  "description": "Production-ready direct LTL freight quoting and dispatch portal delivering end-to-end transportation solutions across the United States and Canada.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,143 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #05070A;
+  --bg-card: rgba(13, 18, 28, 0.65);
+  --yellow-primary: #FACC15;
+  --yellow-hover: #FDE047;
+  --neon-blue: #38BDF8;
+  --neon-cyan: #00F0FF;
+  --glass: rgba(255, 255, 255, 0.025);
+  --glass-border: rgba(255, 255, 255, 0.09);
+  --glass-border-focus: rgba(250, 204, 21, 0.4);
+  --text-dim: #94A3B8;
+  --text-muted: #64748B;
+  --text-bright: #F8FAFC;
+}
+
+@layer base {
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: var(--bg);
+    color: var(--text-bright);
+    min-height: 100vh;
+    overflow-x: hidden;
+    letter-spacing: -0.01em;
+  }
+}
+
+/* Minimalist Glassmorphic Panels */
+.glass {
+  background: var(--bg-card);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+}
+
+.glass-subtle {
+  background: rgba(255, 255, 255, 0.015);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+}
+
+.glass-yellow {
+  background: rgba(250, 204, 21, 0.03);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(250, 204, 21, 0.18);
+  border-radius: 14px;
+}
+
+.glass-neon {
+  background: rgba(56, 189, 248, 0.03);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(56, 189, 248, 0.18);
+  border-radius: 14px;
+}
+
+/* Spacious, Breathable Form Inputs */
+.glass-input {
+  background: rgba(8, 11, 18, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #FFFFFF;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-input:focus {
+  background: rgba(11, 16, 26, 0.98);
+  border-color: #FACC15;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(250, 204, 21, 0.2);
+}
+
+/* Canary Yellow Primary Button */
+.btn-yellow {
+  background-color: #FACC15;
+  color: #05070A;
+  font-weight: 800;
+  transition: all 0.2s ease;
+}
+
+.btn-yellow:hover:not(:disabled) {
+  background-color: #FDE047;
+  box-shadow: 0 0 20px rgba(250, 204, 21, 0.35);
+  transform: translateY(-1px);
+}
+
+/* Light Neon Blue Accent Elements */
+.text-neon {
+  color: #38BDF8;
+}
+
+.border-neon {
+  border-color: rgba(56, 189, 248, 0.25);
+}
+
+/* Minimal Tag System */
+.tag {
+  font-size: 11px;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 3px 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #CBD5E1;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+
+.tag-yellow {
+  background: rgba(250, 204, 21, 0.1);
+  color: #FACC15;
+  border-color: rgba(250, 204, 21, 0.3);
+  font-weight: 600;
+}
+
+.tag-neon {
+  background: rgba(56, 189, 248, 0.1);
+  color: #38BDF8;
+  border-color: rgba(56, 189, 248, 0.3);
+  font-weight: 600;
+}
+
+/* Minimal Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #05070A;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(250, 204, 21, 0.4);
+}
