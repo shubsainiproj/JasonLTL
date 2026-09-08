@@ -14,10 +14,18 @@ import {
   Sparkles,
   Check,
   Layers,
+  SlidersHorizontal,
 } from 'lucide-react';
 import { LineItem, QuoteRequestPayload } from '../types';
 import { LocationAutocomplete } from './LocationAutocomplete';
 import { LineItemsEditor } from './LineItemsEditor';
+import { MoreAccessorialsModal } from './MoreAccessorialsModal';
+import {
+  PRIMARY_ORIGIN_ACCESSORIALS,
+  PRIMARY_DELIVERY_ACCESSORIALS,
+  PRIMARY_GENERAL_ACCESSORIALS,
+  ACCESSORIAL_ID_MAP,
+} from '../data/accessorialsData';
 
 interface QuoteFormProps {
   onSubmitQuote: (payload: QuoteRequestPayload) => Promise<void>;
@@ -171,17 +179,22 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({
   tomorrow.setDate(tomorrow.getDate() + 1);
   const defaultDate = tomorrow.toISOString().split('T')[0];
 
-  // Clean empty state for manual user entry
+  // Routing State
+  const [pickupCountry, setPickupCountry] = useState<'US' | 'CA'>('US');
   const [pickupLocation, setPickupLocation] = useState('');
   const [pickupZip, setPickupZip] = useState('');
 
+  const [deliveryCountry, setDeliveryCountry] = useState<'US' | 'CA'>('US');
   const [deliveryLocation, setDeliveryLocation] = useState('');
   const [deliveryZip, setDeliveryZip] = useState('');
 
   const [pickupDate, setPickupDate] = useState(defaultDate);
-  const [selectedAccessorials, setSelectedAccessorials] = useState<string[]>([]);
 
-  // Clean initial line item ready for manual entry
+  // Accessorials State (stores string IDs matching API specification)
+  const [selectedAccessorials, setSelectedAccessorials] = useState<string[]>([]);
+  const [moreModalOpen, setMoreModalOpen] = useState(false);
+
+  // Line items state
   const [lineItems, setLineItems] = useState<LineItem[]>([
     {
       id: 'item-1',
@@ -195,6 +208,7 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({
       dimUnit: 'in',
       nmfcClass: '70',
       commodity: '',
+      autoCalculatedClass: true,
     },
   ]);
 
@@ -217,19 +231,24 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({
   }, [loading]);
 
   const handleSwapLocations = () => {
+    const tempCountry = pickupCountry;
     const tempLoc = pickupLocation;
     const tempZip = pickupZip;
+
+    setPickupCountry(deliveryCountry);
     setPickupLocation(deliveryLocation);
     setPickupZip(deliveryZip);
+
+    setDeliveryCountry(tempCountry);
     setDeliveryLocation(tempLoc);
     setDeliveryZip(tempZip);
   };
 
-  const toggleQuickAccessorial = (name: string) => {
-    if (selectedAccessorials.includes(name)) {
-      setSelectedAccessorials(selectedAccessorials.filter((item) => item !== name));
+  const toggleAccessorial = (id: string) => {
+    if (selectedAccessorials.includes(id)) {
+      setSelectedAccessorials(selectedAccessorials.filter((item) => item !== id));
     } else {
-      setSelectedAccessorials([...selectedAccessorials, name]);
+      setSelectedAccessorials([...selectedAccessorials, id]);
     }
   };
 
@@ -238,14 +257,22 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({
     setValidationError(null);
 
     const cleanPickupZip = pickupZip.trim();
-    if (!cleanPickupZip || cleanPickupZip.length < 5) {
-      setValidationError('Please enter a valid 5-digit origin / pickup ZIP code.');
+    if (!cleanPickupZip) {
+      setValidationError('Please enter a valid origin / pickup postal code or ZIP.');
+      return;
+    }
+    if (pickupCountry === 'US' && cleanPickupZip.length < 5) {
+      setValidationError('Please enter a valid 5-digit US origin ZIP code.');
       return;
     }
 
     const cleanDeliveryZip = deliveryZip.trim();
-    if (!cleanDeliveryZip || cleanDeliveryZip.length < 5) {
-      setValidationError('Please enter a valid 5-digit destination / delivery ZIP code.');
+    if (!cleanDeliveryZip) {
+      setValidationError('Please enter a valid destination / delivery postal code or ZIP.');
+      return;
+    }
+    if (deliveryCountry === 'US' && cleanDeliveryZip.length < 5) {
+      setValidationError('Please enter a valid 5-digit US destination ZIP code.');
       return;
     }
 
@@ -275,8 +302,10 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({
     const payload: QuoteRequestPayload = {
       pickupLocation: pickupLocation.trim() || `ZIP ${cleanPickupZip}`,
       pickupZip: cleanPickupZip,
+      pickupCountry,
       deliveryLocation: deliveryLocation.trim() || `ZIP ${cleanDeliveryZip}`,
       deliveryZip: cleanDeliveryZip,
+      deliveryCountry,
       pickupDate,
       accessorials: selectedAccessorials,
       lineItems: lineItems.map((it) => ({
@@ -305,10 +334,26 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({
       .replace(/myportal/gi, 'portal');
   };
 
+  // Count accessorials beyond primary ones
+  const primaryIds = new Set([
+    ...PRIMARY_ORIGIN_ACCESSORIALS.map((a) => a.id),
+    ...PRIMARY_DELIVERY_ACCESSORIALS.map((a) => a.id),
+    ...PRIMARY_GENERAL_ACCESSORIALS.map((a) => a.id),
+  ]);
+  const moreSelectedCount = selectedAccessorials.filter((id) => !primaryIds.has(id)).length;
+
   return (
     <form onSubmit={handleSubmit} className="w-full max-w-5xl mx-auto space-y-6">
-      {/* 1. Origin & Destination Routing */}
-      <div className="glass p-6 sm:p-7 space-y-5">
+      {/* More Accessorials Modal */}
+      <MoreAccessorialsModal
+        isOpen={moreModalOpen}
+        onClose={() => setMoreModalOpen(false)}
+        selectedIds={selectedAccessorials}
+        onToggle={toggleAccessorial}
+      />
+
+      {/* 1. Origin & Destination Routing with Country Select Option */}
+      <div className="glass p-6 sm:p-7 space-y-5 stops">
         <div className="flex items-center justify-between border-b border-white/[0.08] pb-4">
           <div className="flex items-center space-x-3">
             <span className="w-2.5 h-2.5 rounded-full bg-[#FACC15] shadow-[0_0_8px_rgba(250,204,21,0.6)]" />
@@ -317,20 +362,21 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({
             </h2>
           </div>
           <span className="tag-neon text-[11px] font-mono hidden sm:inline-flex">
-            Direct Terminal Interconnect
+            US &amp; Cross-Border Canada
           </span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-11 gap-4 items-end">
-          {/* Origin / Pickup Location Autocomplete */}
-          <div className="md:col-span-5">
+        <div className="stops-container grid grid-cols-1 md:grid-cols-11 gap-4 items-end">
+          {/* Origin / Pickup Location with Country Select */}
+          <div className="md:col-span-5 stop-selector-wrapper">
             <LocationAutocomplete
               id="input-pickup-location"
               label="Pickup Location / Zip Code"
               value={pickupLocation}
               zipValue={pickupZip}
+              country={pickupCountry}
+              onCountryChange={setPickupCountry}
               required
-              placeholder="Enter 5-digit ZIP or City, State"
               onChange={(loc, zip) => {
                 setPickupLocation(loc);
                 setPickupZip(zip);
@@ -351,15 +397,16 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({
             </button>
           </div>
 
-          {/* Destination / Delivery Location Autocomplete */}
-          <div className="md:col-span-5">
+          {/* Destination / Delivery Location with Country Select */}
+          <div className="md:col-span-5 stop-selector-wrapper">
             <LocationAutocomplete
               id="input-delivery-location"
               label="Delivery Location / Zip Code"
               value={deliveryLocation}
               zipValue={deliveryZip}
+              country={deliveryCountry}
+              onCountryChange={setDeliveryCountry}
               required
-              placeholder="Enter 5-digit ZIP or City, State"
               onChange={(loc, zip) => {
                 setDeliveryLocation(loc);
                 setDeliveryZip(zip);
@@ -387,7 +434,7 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({
         </div>
       </div>
 
-      {/* 2. Line Items Section (Freight Specifications) */}
+      {/* 2. Line Items Section with AUTO CALCULATE CLASS */}
       <div className="glass p-6 sm:p-7 space-y-5">
         <div className="flex items-center justify-between border-b border-white/[0.08] pb-4">
           <div className="flex items-center space-x-3">
@@ -409,73 +456,172 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({
         />
       </div>
 
-      {/* 3. Enhanced Accessorial & PTL Advisory Card */}
-      <div className="glass-yellow p-5 sm:p-6 space-y-4 relative overflow-hidden transition-all">
-        <div className="flex items-start sm:items-center justify-between gap-3">
+      {/* 3. ACCESSORIALS SECTION (Matching Reference Structure) */}
+      <div className="glass p-6 sm:p-7 space-y-5">
+        <div className="flex items-center justify-between border-b border-white/[0.08] pb-4">
           <div className="flex items-center space-x-3">
-            <div className="w-9 h-9 rounded-xl bg-yellow-400/15 border border-yellow-400/30 flex items-center justify-center text-[#FACC15] shrink-0">
-              <Sparkles className="w-4 h-4" />
-            </div>
+            <span className="w-2.5 h-2.5 rounded-full bg-[#FACC15] shadow-[0_0_8px_rgba(250,204,21,0.6)]" />
             <div>
-              <h3 className="text-sm sm:text-base font-bold text-white tracking-tight flex items-center gap-2">
-                Accessorials &amp; Direct Transit Advisory
-                <span className="tag-yellow text-[10px]">Cost-Optimized</span>
-              </h3>
-              <p className="text-xs text-slate-400">
-                Transparent guidance for appointments, dock handling, and equipment
+              <h2 className="text-sm sm:text-base font-bold uppercase tracking-wider text-white">
+                3. Accessorials &amp; Handling Options
+              </h2>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Select equipment, dock, and delivery handling requirements
               </p>
+            </div>
+          </div>
+
+          {/* More Accessorials Button */}
+          <button
+            id="more-accessorials"
+            type="button"
+            onClick={() => setMoreModalOpen(true)}
+            className="row-accessorials__button flex items-center space-x-2 px-3.5 py-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.12] hover:border-yellow-400/40 text-xs font-bold text-slate-200 transition-all cursor-pointer shadow-sm"
+          >
+            <SlidersHorizontal className="w-3.5 h-3.5 text-[#FACC15]" />
+            <span>More Accessorials</span>
+            {moreSelectedCount > 0 && (
+              <span className="px-1.5 py-0.5 rounded-full bg-yellow-400 text-slate-950 font-mono text-[10px] font-bold">
+                +{moreSelectedCount}
+              </span>
+            )}
+          </button>
+        </div>
+
+        {/* Row of Origin vs Delivery Accessorials */}
+        <div className="row-accessorials__row grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Origin / Pickup Options */}
+          <div className="row-accessorials__information p-4 rounded-xl bg-[#0B0F17]/60 border border-white/[0.08] space-y-3">
+            <div className="text-xs font-bold text-[#38BDF8] uppercase tracking-wider flex items-center gap-1.5">
+              <span>Pickup Accessorials</span>
+            </div>
+            <div className="space-y-2">
+              {PRIMARY_ORIGIN_ACCESSORIALS.map((acc) => {
+                const checked = selectedAccessorials.includes(acc.id);
+                return (
+                  <label
+                    key={acc.id}
+                    htmlFor={acc.id}
+                    className={`flex items-center space-x-3 p-2.5 rounded-lg border transition-all cursor-pointer select-none ${
+                      checked
+                        ? 'bg-yellow-400/15 border-yellow-400/40 text-white'
+                        : 'bg-white/[0.02] border-white/[0.06] hover:bg-white/[0.04] text-slate-300'
+                    }`}
+                  >
+                    <input
+                      id={acc.id}
+                      type="checkbox"
+                      checked={checked}
+                      onChange={() => toggleAccessorial(acc.id)}
+                      className="sr-only"
+                    />
+                    <div
+                      className={`w-4 h-4 rounded border flex items-center justify-center transition-all ${
+                        checked
+                          ? 'bg-yellow-400 border-yellow-400 text-slate-950'
+                          : 'border-slate-500 bg-black/40'
+                      }`}
+                    >
+                      {checked && <Check className="w-3 h-3 stroke-[3]" />}
+                    </div>
+                    <span className="text-xs font-semibold">{acc.name}</span>
+                  </label>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Delivery Options */}
+          <div className="row-accessorials__information p-4 rounded-xl bg-[#0B0F17]/60 border border-white/[0.08] space-y-3">
+            <div className="text-xs font-bold text-[#38BDF8] uppercase tracking-wider flex items-center gap-1.5">
+              <span>Delivery Accessorials</span>
+            </div>
+            <div className="space-y-2">
+              {PRIMARY_DELIVERY_ACCESSORIALS.map((acc) => {
+                const checked = selectedAccessorials.includes(acc.id);
+                return (
+                  <label
+                    key={acc.id}
+                    htmlFor={acc.id}
+                    className={`flex items-center space-x-3 p-2.5 rounded-lg border transition-all cursor-pointer select-none ${
+                      checked
+                        ? 'bg-yellow-400/15 border-yellow-400/40 text-white'
+                        : 'bg-white/[0.02] border-white/[0.06] hover:bg-white/[0.04] text-slate-300'
+                    }`}
+                  >
+                    <input
+                      id={acc.id}
+                      type="checkbox"
+                      checked={checked}
+                      onChange={() => toggleAccessorial(acc.id)}
+                      className="sr-only"
+                    />
+                    <div
+                      className={`w-4 h-4 rounded border flex items-center justify-center transition-all ${
+                        checked
+                          ? 'bg-yellow-400 border-yellow-400 text-slate-950'
+                          : 'border-slate-500 bg-black/40'
+                      }`}
+                    >
+                      {checked && <Check className="w-3 h-3 stroke-[3]" />}
+                    </div>
+                    <span className="text-xs font-semibold">{acc.name}</span>
+                  </label>
+                );
+              })}
             </div>
           </div>
         </div>
 
-        <div className="p-4 rounded-xl bg-[#05070A]/70 border border-white/[0.08] text-xs sm:text-sm text-slate-200 leading-relaxed space-y-2.5">
-          <p>
-            <strong className="text-[#FACC15] font-bold">Cost Transparency:</strong> Standard accessorials generally carry minimal cost impact unless strict appointment deliveries or specialized hydraulic liftgates are required.
-          </p>
-          <p className="text-slate-300">
-            For strict delivery appointment windows or high-volume shipments, we frequently coordinate <span className="text-[#38BDF8] font-bold">PTL (Partial Truckload)</span>. PTL eliminates multi-hub cross-docking, ensures direct point-to-point transit, reduces freight handling risks to zero, and guarantees exact appointment delivery without costly penalty fees.
-          </p>
+        {/* General Accessorials Container */}
+        <div className="general-accessorials-container p-4 rounded-xl bg-[#0B0F17]/60 border border-white/[0.08] space-y-3">
+          <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+            General Handling Requirements
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {PRIMARY_GENERAL_ACCESSORIALS.map((acc) => {
+              const checked = selectedAccessorials.includes(acc.id);
+              return (
+                <label
+                  key={acc.id}
+                  htmlFor={acc.id}
+                  className={`flex items-center space-x-3 p-2.5 rounded-lg border transition-all cursor-pointer select-none ${
+                    checked
+                      ? 'bg-yellow-400/15 border-yellow-400/40 text-white'
+                      : 'bg-white/[0.02] border-white/[0.06] hover:bg-white/[0.04] text-slate-300'
+                  }`}
+                >
+                  <input
+                    id={acc.id}
+                    type="checkbox"
+                    checked={checked}
+                    onChange={() => toggleAccessorial(acc.id)}
+                    className="sr-only"
+                  />
+                  <div
+                    className={`w-4 h-4 rounded border flex items-center justify-center transition-all ${
+                      checked
+                        ? 'bg-yellow-400 border-yellow-400 text-slate-950'
+                        : 'border-slate-500 bg-black/40'
+                    }`}
+                  >
+                    {checked && <Check className="w-3 h-3 stroke-[3]" />}
+                  </div>
+                  <span className="text-xs font-semibold">{acc.name}</span>
+                </label>
+              );
+            })}
+          </div>
         </div>
 
-        {/* Optional Clean Add-on Toggles */}
-        <div className="pt-1 flex flex-wrap items-center gap-2.5 text-xs">
-          <span className="text-slate-300 text-xs font-semibold mr-1">Optional Requirements:</span>
-          <button
-            type="button"
-            onClick={() => toggleQuickAccessorial('Liftgate Delivery')}
-            className={`px-3.5 py-2 rounded-lg text-xs font-semibold border transition-all cursor-pointer flex items-center gap-2 ${
-              selectedAccessorials.includes('Liftgate Delivery')
-                ? 'bg-yellow-400/20 text-[#FACC15] border-yellow-400/50 shadow-sm'
-                : 'bg-white/[0.03] text-slate-300 border-white/[0.08] hover:border-white/[0.2]'
-            }`}
-          >
-            <Check className={`w-3.5 h-3.5 ${selectedAccessorials.includes('Liftgate Delivery') ? 'text-[#FACC15]' : 'opacity-30'}`} />
-            <span>Liftgate Delivery</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => toggleQuickAccessorial('Appointment Delivery')}
-            className={`px-3.5 py-2 rounded-lg text-xs font-semibold border transition-all cursor-pointer flex items-center gap-2 ${
-              selectedAccessorials.includes('Appointment Delivery')
-                ? 'bg-yellow-400/20 text-[#FACC15] border-yellow-400/50 shadow-sm'
-                : 'bg-white/[0.03] text-slate-300 border-white/[0.08] hover:border-white/[0.2]'
-            }`}
-          >
-            <Check className={`w-3.5 h-3.5 ${selectedAccessorials.includes('Appointment Delivery') ? 'text-[#FACC15]' : 'opacity-30'}`} />
-            <span>Strict Appointment Window (PTL Recommended)</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => toggleQuickAccessorial('Inside Delivery')}
-            className={`px-3.5 py-2 rounded-lg text-xs font-semibold border transition-all cursor-pointer flex items-center gap-2 ${
-              selectedAccessorials.includes('Inside Delivery')
-                ? 'bg-yellow-400/20 text-[#FACC15] border-yellow-400/50 shadow-sm'
-                : 'bg-white/[0.03] text-slate-300 border-white/[0.08] hover:border-white/[0.2]'
-            }`}
-          >
-            <Check className={`w-3.5 h-3.5 ${selectedAccessorials.includes('Inside Delivery') ? 'text-[#FACC15]' : 'opacity-30'}`} />
-            <span>Inside Delivery</span>
-          </button>
+        {/* Accessorial & PTL Transit Advisory Card */}
+        <div className="p-4 rounded-xl bg-yellow-400/5 border border-yellow-400/20 text-xs sm:text-sm text-slate-300 leading-relaxed space-y-2">
+          <p>
+            <strong className="text-[#FACC15] font-bold">Cost Transparency:</strong> Standard accessorials carry minimal cost impact unless strict appointments or specialized hydraulic equipment are required.
+          </p>
+          <p className="text-slate-400 text-xs">
+            For strict delivery appointment windows or high-volume freight, we recommend <strong className="text-[#38BDF8]">PTL (Partial Truckload)</strong> to avoid multi-hub cross-docking and guarantee direct appointment delivery.
+          </p>
         </div>
       </div>
 
@@ -490,7 +636,11 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({
             <span className="text-[#FACC15] font-extrabold text-base">+</span>
             <span>Optional Declared Cargo Value &amp; Shipper Reference / PO</span>
           </div>
-          {showOptional ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
+          {showOptional ? (
+            <ChevronUp className="w-4 h-4 text-slate-400" />
+          ) : (
+            <ChevronDown className="w-4 h-4 text-slate-400" />
+          )}
         </button>
 
         {showOptional && (
@@ -500,13 +650,17 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({
                 Declared Cargo Value ($ USD)
               </label>
               <div className="relative">
-                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm">$</span>
+                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm">
+                  $
+                </span>
                 <input
                   type="number"
                   min="0"
                   step="100"
                   value={cargoValue !== undefined ? cargoValue : ''}
-                  onChange={(e) => setCargoValue(e.target.value ? parseFloat(e.target.value) : undefined)}
+                  onChange={(e) =>
+                    setCargoValue(e.target.value ? parseFloat(e.target.value) : undefined)
+                  }
                   placeholder="e.g. 15000"
                   className="glass-input w-full pl-8 pr-3.5 py-2.5 rounded-lg text-sm"
                 />
@@ -540,7 +694,7 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({
         </div>
       )}
 
-      {/* Dynamic Jason LTL Loading Box with Rotating Idioms, News & Appreciations */}
+      {/* Dynamic Jason LTL Loading Box with Rotating Idioms & News */}
       {loading && (
         <div className="p-6 sm:p-7 rounded-2xl bg-black/90 border border-yellow-400/40 shadow-2xl text-slate-200 space-y-4 animate-in fade-in duration-200">
           {/* Header */}

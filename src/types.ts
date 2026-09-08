@@ -10,6 +10,7 @@ export interface LineItem {
   dimUnit: 'in' | 'cm';
   nmfcClass: string;
   commodity: string;
+  autoCalculatedClass?: boolean;
 }
 
 export interface QuoteRequestPayload {
@@ -17,10 +18,12 @@ export interface QuoteRequestPayload {
   pickupZip: string;
   pickupCity?: string;
   pickupState?: string;
+  pickupCountry?: 'US' | 'CA';
   deliveryLocation: string;
   deliveryZip: string;
   deliveryCity?: string;
   deliveryState?: string;
+  deliveryCountry?: 'US' | 'CA';
   pickupDate?: string;
   accessorials: string[];
   lineItems: LineItem[];

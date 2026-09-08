@@ -55,20 +55,38 @@ const US_POSTAL_HUBS: LocationSuggestion[] = [
   { zip: '92101', city: 'San Diego', state: 'CA', formatted: 'San Diego, CA 92101' },
 ];
 
-export async function searchLocations(query: string, token?: string): Promise<LocationSuggestion[]> {
+// Canadian postal reference hubs
+const CA_POSTAL_HUBS: LocationSuggestion[] = [
+  { zip: 'M5H 2N2', city: 'Toronto', state: 'ON', formatted: 'Toronto, ON M5H 2N2' },
+  { zip: 'H3B 1A7', city: 'Montreal', state: 'QC', formatted: 'Montreal, QC H3B 1A7' },
+  { zip: 'V6B 1A1', city: 'Vancouver', state: 'BC', formatted: 'Vancouver, BC V6B 1A1' },
+  { zip: 'T2P 1J9', city: 'Calgary', state: 'AB', formatted: 'Calgary, AB T2P 1J9' },
+  { zip: 'T5J 0K1', city: 'Edmonton', state: 'AB', formatted: 'Edmonton, AB T5J 0K1' },
+  { zip: 'K1P 1J1', city: 'Ottawa', state: 'ON', formatted: 'Ottawa, ON K1P 1J1' },
+  { zip: 'R3C 0V8', city: 'Winnipeg', state: 'MB', formatted: 'Winnipeg, MB R3C 0V8' },
+  { zip: 'L4W 1S9', city: 'Mississauga', state: 'ON', formatted: 'Mississauga, ON L4W 1S9' },
+  { zip: 'B3J 1S9', city: 'Halifax', state: 'NS', formatted: 'Halifax, NS B3J 1S9' },
+  { zip: 'T8N 1E8', city: 'St. Albert', state: 'AB', formatted: 'St. Albert, AB T8N 1E8' },
+];
+
+export async function searchLocations(query: string, token?: string, countryCode: string = 'US'): Promise<LocationSuggestion[]> {
+  const isCanada = countryCode?.toUpperCase() === 'CA';
+  const defaultHubs = isCanada ? CA_POSTAL_HUBS : US_POSTAL_HUBS;
+
   if (!query || query.trim().length < 2) {
-    return US_POSTAL_HUBS.slice(0, 8);
+    return defaultHubs.slice(0, 8);
   }
 
   const clean = query.trim();
+  const apiCountry = isCanada ? 'CA' : 'US';
 
-  // If token is provided, query GLT's live /api/locations endpoint
+  // If token is provided, query carrier live /api/locations endpoint
   if (token) {
     try {
-      const isZip = /^\d+$/.test(clean);
+      const isZip = isCanada ? /^[A-Za-z]\d[A-Za-z]/i.test(clean) : /^\d+$/.test(clean);
       const url = isZip
-        ? `${CONFIG.GLT_API_URL}/api/locations?zip_code=${encodeURIComponent(clean)}&country_code=US`
-        : `${CONFIG.GLT_API_URL}/api/locations?city=${encodeURIComponent(clean)}&country_code=US`;
+        ? `${CONFIG.GLT_API_URL}/api/locations?zip_code=${encodeURIComponent(clean)}&country_code=${apiCountry}`
+        : `${CONFIG.GLT_API_URL}/api/locations?city=${encodeURIComponent(clean)}&country_code=${apiCountry}`;
 
       const res = await axios.get(url, {
         headers: { Authorization: `Bearer ${token}` },
@@ -102,22 +120,32 @@ export async function searchLocations(query: string, token?: string): Promise<Lo
   }
 
   const lower = clean.toLowerCase();
-  const matches = US_POSTAL_HUBS.filter(
+  const matches = defaultHubs.filter(
     (loc) =>
-      loc.zip.startsWith(lower) ||
+      loc.zip.toLowerCase().startsWith(lower) ||
       loc.city.toLowerCase().includes(lower) ||
       loc.state.toLowerCase() === lower ||
       loc.formatted.toLowerCase().includes(lower)
   );
 
-  // If query is a 5-digit zip not in our main list, generate entry
-  if (/^\d{5}$/.test(clean) && !matches.some((m) => m.zip === clean)) {
+  // If query looks like a postal code not in our main list, generate entry
+  if (!isCanada && /^\d{5}$/.test(clean) && !matches.some((m) => m.zip === clean)) {
     return [
       {
         zip: clean,
         city: 'US Postal Terminal',
         state: 'US',
         formatted: `${clean} (US Postal Terminal)`,
+      },
+      ...matches.slice(0, 7),
+    ];
+  } else if (isCanada && /^[A-Za-z]\d[A-Za-z]\s?\d[A-Za-z]\d$/i.test(clean) && !matches.some((m) => m.zip.toLowerCase() === clean.toLowerCase())) {
+    return [
+      {
+        zip: clean.toUpperCase(),
+        city: 'Canadian Freight Terminal',
+        state: 'CA',
+        formatted: `${clean.toUpperCase()} (Canadian Freight Terminal)`,
       },
       ...matches.slice(0, 7),
     ];

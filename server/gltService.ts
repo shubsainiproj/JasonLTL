@@ -239,6 +239,11 @@ export class GLTService {
 
     const quoteToken = generateToken();
 
+    // Check if any hazmat accessorial is requested
+    const isHazmat = (payload.accessorials || []).some(
+      (acc: string) => acc === '29' || acc === '103' || acc === '28' || acc === '34' || acc === '125' || /hazmat/i.test(acc)
+    );
+
     // 2. Prepare GLT API Load creation payload
     const gltLineItems = payload.lineItems.map((item: LineItem, idx: number) => {
       const weightLbs = item.weightUnit === 'kg' ? Math.round(item.weight * 2.20462) : item.weight;
@@ -261,7 +266,7 @@ export class GLTService {
         dimension_units: 'in',
         pickup_stop: 'stop-pickup',
         delivery_stop: 'stop-delivery',
-        hazardous_materials: false,
+        hazardous_materials: isHazmat,
         packaging_unit_count: item.units || 1,
         packaging_units: item.type || 'Pallets',
       };
@@ -277,7 +282,7 @@ export class GLTService {
         zip_code: payload.pickupZip.trim(),
         city: payload.pickupCity?.trim() || undefined,
         state_code: payload.pickupState?.trim() || undefined,
-        country_code: 'US',
+        country_code: payload.pickupCountry || 'US',
       },
       {
         name: 'Delivery',
@@ -288,14 +293,14 @@ export class GLTService {
         zip_code: payload.deliveryZip.trim(),
         city: payload.deliveryCity?.trim() || undefined,
         state_code: payload.deliveryState?.trim() || undefined,
-        country_code: 'US',
+        country_code: payload.deliveryCountry || 'US',
       },
     ];
 
     const loadPayload = {
       load: {
         mode_id: 'a0k1I0000005NnyQAE', // LTL mode
-        customer_id: '001Rc00000iaenCIAQ', // Canary Yellow Logistics account ID
+        customer_id: '001Rc00000iaenCIAQ', // Direct carrier account ID
         total_weight: Math.round(totalWeightLbs),
         cargo_value_for_insurance: payload.cargoValue || null,
         origin_portal_quote: true,
@@ -344,7 +349,75 @@ export class GLTService {
 
       console.log(`[Jason LTL] Load successfully created: ${loadId}`);
 
-      // 4. Trigger Live Quote calculation
+      // 4. Attach any selected accessorials via dedicated endpoint
+      if (payload.accessorials && payload.accessorials.length > 0) {
+        const ACCESSORIAL_NAMES: Record<string, string> = {
+          '4': 'CFS Pick Up',
+          '19': 'Liftgate Pick Up',
+          '21': 'Residential Pick Up',
+          '3': 'CFS Delivery',
+          '18': 'Liftgate Delivery',
+          '20': 'Residential Delivery',
+          '29': 'Hazmat',
+          '15': 'Non Stackable',
+          '41': 'Stackable',
+          '40': 'Air Ride truck',
+          '16': 'Bonded',
+          '39': 'Bonded + Form 7512',
+          '100': 'Double Blind',
+          '80': 'Envelope(s)',
+          '14': 'Guaranteed transit time',
+          '11': 'Guns handling license',
+          '103': 'Hazmat 2.3',
+          '28': 'Hazmat Explosives 1.4',
+          '34': 'Hazmat Toxic or Poison 6.1',
+          '63': 'Household Goods',
+          '43': 'Liquids',
+          '33': 'Over Dimension (length)',
+          '85': 'Protect from Freeze',
+          '35': 'Single Shipment',
+          '36': 'Sort and Segregate',
+          '101': 'Temperature Control',
+          '42': 'Trade Show',
+          '47': 'Airport Pickup',
+          '17': 'Construction Site Pick Up',
+          '1': 'Inside Pick Up',
+          '58': 'Military Base Pick Up',
+          '46': 'Airport Delivery',
+          '7': 'Construction Site Delivery',
+          '2': 'Inside Delivery',
+          '57': 'Military Base Delivery',
+        };
+
+        for (const rawAcc of payload.accessorials) {
+          const accStr = String(rawAcc).trim();
+          const accIdNum = parseInt(accStr, 10);
+          const name = ACCESSORIAL_NAMES[accStr] || accStr;
+          if (!isNaN(accIdNum)) {
+            try {
+              await axios.post(
+                `${CONFIG.GLT_API_URL}/api/loads/${loadId}/accessorials`,
+                {
+                  id_load: loadId,
+                  accessorial_id: accIdNum,
+                  name,
+                },
+                {
+                  headers: { Authorization: `Bearer ${token}` },
+                  timeout: 5000,
+                }
+              );
+            } catch (accErr: any) {
+              console.warn(
+                `[Jason LTL] Accessorial ${accStr} (${name}) attach notice:`,
+                accErr.response?.data || accErr.message
+              );
+            }
+          }
+        }
+      }
+
+      // 5. Trigger Live Quote calculation
       await axios.post(`${CONFIG.GLT_API_URL}/api/loads/${loadId}/quote`, {}, {
         headers: { Authorization: `Bearer ${token}` },
         timeout: 15000,

@@ -1,6 +1,8 @@
-import React from 'react';
-import { Plus, Trash2, Box, Layers, HelpCircle } from 'lucide-react';
+import React, { useState } from 'react';
+import { Plus, Trash2, Layers, Calculator, Sparkles, AlertCircle } from 'lucide-react';
 import { LineItem } from '../types';
+import { calculateDensityPcf, getNMFCClassFromDensity } from '../utils/densityCalculator';
+import { ExcludedCommoditiesModal } from './ExcludedCommoditiesModal';
 
 interface LineItemsEditorProps {
   items: LineItem[];
@@ -15,6 +17,8 @@ export const LineItemsEditor: React.FC<LineItemsEditorProps> = ({
   nmfcClasses,
   packageTypes,
 }) => {
+  const [showExcludedModal, setShowExcludedModal] = useState(false);
+
   const addLine = () => {
     const newItem: LineItem = {
       id: `line-${Date.now()}-${Math.random().toString(36).substring(2, 5)}`,
@@ -28,6 +32,7 @@ export const LineItemsEditor: React.FC<LineItemsEditorProps> = ({
       dimUnit: 'in',
       nmfcClass: '70',
       commodity: '',
+      autoCalculatedClass: true,
     };
     onChange([...items, newItem]);
   };
@@ -47,6 +52,7 @@ export const LineItemsEditor: React.FC<LineItemsEditorProps> = ({
           dimUnit: 'in',
           nmfcClass: '70',
           commodity: '',
+          autoCalculatedClass: true,
         },
       ]);
       return;
@@ -57,7 +63,32 @@ export const LineItemsEditor: React.FC<LineItemsEditorProps> = ({
   const updateItem = (index: number, field: keyof LineItem, val: any) => {
     const updated = items.map((item, i) => {
       if (i === index) {
-        return { ...item, [field]: val };
+        const next = { ...item, [field]: val };
+
+        // If dimensions or weight changed and auto-calculate is enabled, re-calculate NMFC class
+        if (
+          next.autoCalculatedClass !== false &&
+          (field === 'length' ||
+            field === 'width' ||
+            field === 'height' ||
+            field === 'weight' ||
+            field === 'dimUnit' ||
+            field === 'weightUnit')
+        ) {
+          const l = Number(field === 'length' ? val : next.length) || 0;
+          const w = Number(field === 'width' ? val : next.width) || 0;
+          const h = Number(field === 'height' ? val : next.height) || 0;
+          const wt = Number(field === 'weight' ? val : next.weight) || 0;
+          const du = (field === 'dimUnit' ? val : next.dimUnit) || 'in';
+          const wu = (field === 'weightUnit' ? val : next.weightUnit) || 'lbs';
+
+          const density = calculateDensityPcf(l, w, h, wt, du, wu);
+          if (density !== null && density > 0) {
+            next.nmfcClass = getNMFCClassFromDensity(density);
+          }
+        }
+
+        return next;
       }
       return item;
     });
@@ -75,6 +106,29 @@ export const LineItemsEditor: React.FC<LineItemsEditorProps> = ({
     }
   };
 
+  // Manual or explicit auto-calculate trigger
+  const handleAutoCalculateClass = (index: number) => {
+    const item = items[index];
+    const l = Number(item.length) || 0;
+    const w = Number(item.width) || 0;
+    const h = Number(item.height) || 0;
+    const wt = Number(item.weight) || 0;
+    const density = calculateDensityPcf(l, w, h, wt, item.dimUnit, item.weightUnit);
+
+    const calcClass = getNMFCClassFromDensity(density);
+    const updated = items.map((it, i) => {
+      if (i === index) {
+        return {
+          ...it,
+          nmfcClass: calcClass,
+          autoCalculatedClass: true,
+        };
+      }
+      return it;
+    });
+    onChange(updated);
+  };
+
   // Calculate totals
   const totalUnits = items.reduce((sum, item) => sum + (Number(item.units) || 0), 0);
   const totalWeightLbs = items.reduce((sum, item) => {
@@ -85,16 +139,28 @@ export const LineItemsEditor: React.FC<LineItemsEditorProps> = ({
 
   return (
     <div className="w-full space-y-4">
+      {/* Excluded Commodities Modal */}
+      <ExcludedCommoditiesModal
+        isOpen={showExcludedModal}
+        onClose={() => setShowExcludedModal(false)}
+      />
+
       {/* Header with Title & Add Line button */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-1">
         <div className="flex items-center space-x-3 text-xs sm:text-sm text-slate-300">
           <span className="flex items-center gap-1.5">
             <Layers className="w-4 h-4 text-[#38BDF8]" />
-            <span>Total Units: <strong className="text-white font-bold">{totalUnits}</strong></span>
+            <span>
+              Total Units: <strong className="text-white font-bold">{totalUnits}</strong>
+            </span>
           </span>
           <span className="text-slate-600">&bull;</span>
           <span>
-            Total Weight: <strong className="text-[#FACC15] font-bold">{Math.round(totalWeightLbs).toLocaleString()}</strong> lbs
+            Total Weight:{' '}
+            <strong className="text-[#FACC15] font-bold">
+              {Math.round(totalWeightLbs).toLocaleString()}
+            </strong>{' '}
+            lbs
           </span>
         </div>
 
@@ -112,20 +178,18 @@ export const LineItemsEditor: React.FC<LineItemsEditorProps> = ({
       {/* Line Items List */}
       <div className="space-y-4">
         {items.map((item, index) => {
-          // Calculate density (lbs per cubic foot)
           const l = Number(item.length) || 0;
           const w = Number(item.width) || 0;
           const h = Number(item.height) || 0;
-          const cuInches = l * w * h;
-          const cuFt = item.dimUnit === 'cm' ? cuInches / 28316.8 : cuInches / 1728;
-          const weightNum = Number(item.weight) || 0;
-          const weightLbs = item.weightUnit === 'kg' ? weightNum * 2.20462 : weightNum;
-          const density = cuFt > 0 && weightLbs > 0 ? (weightLbs / cuFt).toFixed(1) : '—';
+          const wt = Number(item.weight) || 0;
+          const densityPcf = calculateDensityPcf(l, w, h, wt, item.dimUnit, item.weightUnit);
+          const densityDisplay = densityPcf !== null ? `${densityPcf.toFixed(1)} PCF` : '—';
+          const suggestedClass = getNMFCClassFromDensity(densityPcf);
 
           return (
             <div
               key={item.id || index}
-              className="p-4 sm:p-5 rounded-xl bg-[#0B0F17]/80 border border-white/[0.1] hover:border-white/[0.18] space-y-4 transition-all duration-200 shadow-sm"
+              className="lineitem-row p-4 sm:p-5 rounded-xl bg-[#0B0F17]/80 border border-white/[0.1] hover:border-white/[0.18] space-y-4 transition-all duration-200 shadow-sm"
             >
               {/* Row Top: Index badge, Commodity, Package Type, Delete button */}
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
@@ -135,11 +199,20 @@ export const LineItemsEditor: React.FC<LineItemsEditorProps> = ({
                   </span>
                 </div>
 
-                {/* Commodity Description */}
-                <div className="flex-1 w-full">
-                  <label className="block text-[11px] uppercase font-semibold text-slate-400 mb-1">
-                    Commodity Description <span className="text-[#FACC15]">*</span>
-                  </label>
+                {/* Commodity Description + Excluded Commodities Link */}
+                <div className="commodity lineitem-inputs flex-1 w-full">
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-[11px] uppercase font-semibold text-slate-400">
+                      Commodity Description <span className="text-[#FACC15]">*</span>
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setShowExcludedModal(true)}
+                      className="commodity-excluded text-[11px] text-[#38BDF8] hover:text-[#7dd3fc] cursor-pointer"
+                    >
+                      List of <u>excluded commodities</u>
+                    </button>
+                  </div>
                   <input
                     type="text"
                     required
@@ -172,17 +245,17 @@ export const LineItemsEditor: React.FC<LineItemsEditorProps> = ({
                 <button
                   type="button"
                   onClick={() => removeLine(index)}
-                  className="text-slate-500 hover:text-rose-400 p-2 rounded-lg hover:bg-white/[0.06] transition-colors self-end sm:self-center mt-3 sm:mt-0"
+                  className="text-slate-500 hover:text-rose-400 p-2 rounded-lg hover:bg-white/[0.06] transition-colors self-end sm:self-center mt-3 sm:mt-0 cursor-pointer"
                   title={items.length > 1 ? 'Delete line item' : 'Clear line item'}
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
               </div>
 
-              {/* Row Bottom: Units, Weight, Dimensions (L x W x H), NMFC Class, Density */}
+              {/* Row Bottom: Units, Weight, Dimensions (L x W x H), NMFC Class with Auto Calculate, Density */}
               <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3 text-xs pt-1">
                 {/* Units */}
-                <div>
+                <div className="hucount lineitem-inputs">
                   <label className="block text-[11px] uppercase font-semibold text-slate-400 mb-1">
                     Units <span className="text-[#FACC15]">*</span>
                   </label>
@@ -198,14 +271,16 @@ export const LineItemsEditor: React.FC<LineItemsEditorProps> = ({
                 </div>
 
                 {/* Weight + Unit */}
-                <div>
+                <div className="weight lineitem-inputs">
                   <div className="flex items-center justify-between mb-1">
                     <label className="text-[11px] uppercase font-semibold text-slate-400">
                       Weight <span className="text-[#FACC15]">*</span>
                     </label>
                     <button
                       type="button"
-                      onClick={() => updateItem(index, 'weightUnit', item.weightUnit === 'lbs' ? 'kg' : 'lbs')}
+                      onClick={() =>
+                        updateItem(index, 'weightUnit', item.weightUnit === 'lbs' ? 'kg' : 'lbs')
+                      }
                       className="text-[10px] font-bold text-[#38BDF8] hover:underline cursor-pointer"
                     >
                       [{item.weightUnit.toUpperCase()}]
@@ -223,14 +298,16 @@ export const LineItemsEditor: React.FC<LineItemsEditorProps> = ({
                 </div>
 
                 {/* Dimensions (Length x Width x Height) */}
-                <div className="col-span-2">
+                <div className="dimensions lineitem-inputs col-span-2">
                   <div className="flex items-center justify-between mb-1">
                     <label className="text-[11px] uppercase font-semibold text-slate-400">
                       Dimensions: L &times; W &times; H ({item.dimUnit})
                     </label>
                     <button
                       type="button"
-                      onClick={() => updateItem(index, 'dimUnit', item.dimUnit === 'in' ? 'cm' : 'in')}
+                      onClick={() =>
+                        updateItem(index, 'dimUnit', item.dimUnit === 'in' ? 'cm' : 'in')
+                      }
                       className="text-[10px] font-bold text-[#38BDF8] hover:underline cursor-pointer"
                     >
                       [{item.dimUnit.toUpperCase()}]
@@ -266,14 +343,29 @@ export const LineItemsEditor: React.FC<LineItemsEditorProps> = ({
                   </div>
                 </div>
 
-                {/* NMFC Freight Class */}
-                <div>
-                  <label className="block text-[11px] uppercase font-semibold text-slate-400 mb-1">
-                    Freight Class
-                  </label>
+                {/* NMFC Freight Class with AUTO CALCULATE */}
+                <div className="nmfc lineitem-inputs">
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-[11px] uppercase font-semibold text-slate-400">
+                      NMFC Class
+                    </label>
+                    <button
+                      type="button"
+                      id={`btn-auto-calc-class-${index}`}
+                      onClick={() => handleAutoCalculateClass(index)}
+                      className="auto-calculate-class flex items-center space-x-1 text-[10px] font-bold text-[#FACC15] hover:text-yellow-300 cursor-pointer"
+                      title="Auto calculate freight class from density"
+                    >
+                      <Sparkles className="w-2.5 h-2.5" />
+                      <span>Auto Calc</span>
+                    </button>
+                  </div>
                   <select
                     value={item.nmfcClass}
-                    onChange={(e) => updateItem(index, 'nmfcClass', e.target.value)}
+                    onChange={(e) => {
+                      updateItem(index, 'nmfcClass', e.target.value);
+                      updateItem(index, 'autoCalculatedClass', false);
+                    }}
                     className="glass-input w-full px-2 py-2 rounded-lg text-sm font-semibold cursor-pointer text-[#38BDF8]"
                   >
                     {nmfcClasses.map((cls) => (
@@ -284,13 +376,25 @@ export const LineItemsEditor: React.FC<LineItemsEditorProps> = ({
                   </select>
                 </div>
 
-                {/* Live Density Metric */}
+                {/* Density Metric & Auto-calc Status */}
                 <div>
-                  <label className="block text-[11px] uppercase font-semibold text-slate-400 mb-1">
-                    Density (PCF)
-                  </label>
-                  <div className="glass-subtle w-full px-3 py-2 rounded-lg text-sm font-mono font-bold text-center text-slate-300 border border-white/[0.08]">
-                    {density}
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-[11px] uppercase font-semibold text-slate-400">
+                      Density
+                    </label>
+                    {item.autoCalculatedClass !== false && densityPcf !== null && (
+                      <span className="text-[9px] font-mono text-emerald-400 font-bold">Auto</span>
+                    )}
+                  </div>
+                  <div
+                    className="glass-subtle w-full px-2 py-2 rounded-lg text-xs font-mono font-bold text-center text-slate-300 border border-white/[0.08]"
+                    title={
+                      densityPcf !== null
+                        ? `${densityDisplay} → Standard NMFTA Class ${suggestedClass}`
+                        : 'Enter Weight and Dimensions to calculate density'
+                    }
+                  >
+                    {densityDisplay}
                   </div>
                 </div>
               </div>

@@ -97,8 +97,9 @@ async function startServer() {
   app.get('/api/locations/autocomplete', async (req, res) => {
     try {
       const query = (req.query.q as string) || '';
+      const country = (req.query.country as string) || 'US';
       const session = gltService.getSessionData();
-      const results = await searchLocations(query, session?.authToken);
+      const results = await searchLocations(query, session?.authToken, country);
       res.json(results);
     } catch (err: any) {
       res.status(500).json({ error: err.message });
