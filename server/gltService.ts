@@ -225,7 +225,7 @@ export class GLTService {
 
     const totalWeightLbs = payload.lineItems.reduce((acc, item) => {
       const w = item.weightUnit === 'kg' ? item.weight * 2.20462 : item.weight;
-      return acc + w * (item.units || 1);
+      return acc + w; // Line item weight is the total weight for that line item (do not multiply by units)
     }, 0);
 
     const totalUnits = payload.lineItems.reduce((acc, item) => acc + (item.units || 1), 0);
@@ -425,10 +425,10 @@ export class GLTService {
 
       console.log(`[Jason LTL] Quote requested for Load ${loadId}. Polling carrier rating engine...`);
 
-      // 5. Poll for live carrier quotes accurately for up to 60 seconds
+      // 5. Poll for live carrier quotes accurately for up to 120 seconds
       let liveCarriers: LiveCarrierApiItem[] = [];
       const startTime = Date.now();
-      const maxWaitMs = 60000; // 60s maximum polling ceiling as requested
+      const maxWaitMs = 120000; // 120s maximum polling ceiling as requested
       const pollIntervalMs = 1500; // Poll every 1.5s
       let lastCarrierCount = 0;
       let stableCountIterations = 0;
@@ -451,7 +451,7 @@ export class GLTService {
           const currentCount = validCarriers.length;
 
           console.log(
-            `[Jason LTL] Polling carrier rating engine [${elapsedSeconds}s / 60s]: ${currentCount} live carriers available`
+            `[Jason LTL] Polling carrier rating engine [${elapsedSeconds}s / 120s]: ${currentCount} live carriers available`
           );
 
           if (currentCount > 0) {
@@ -465,24 +465,24 @@ export class GLTService {
             }
 
             // High-confidence completion triggers:
-            // 1. Full carrier matrix (> 25 carriers) and count is stable for at least 1-2 checks
-            if (currentCount >= 25 && stableCountIterations >= 1) {
+            // 1. Full carrier matrix (> 25 carriers) and count is stable for at least 2 checks
+            if (currentCount >= 25 && stableCountIterations >= 2) {
               console.log(
                 `[Jason LTL] Full carrier rate matrix ready (${currentCount} carriers) after ${elapsedSeconds}s. Proceeding.`
               );
               break;
             }
 
-            // 2. Stable carrier pool (> 10 carriers) stable for 3 consecutive polls (4.5s)
-            if (currentCount >= 10 && stableCountIterations >= 3) {
+            // 2. Stable carrier pool (> 10 carriers) stable for 4 consecutive polls (6s)
+            if (currentCount >= 10 && stableCountIterations >= 4) {
               console.log(
                 `[Jason LTL] Carrier pool stabilized with ${currentCount} carriers after ${elapsedSeconds}s. Proceeding.`
               );
               break;
             }
 
-            // 3. Smaller carrier count (> 0 carriers) stable for 4 consecutive polls (6s) or after 35s
-            if (stableCountIterations >= 4 || elapsedSeconds >= 35) {
+            // 3. Smaller carrier count (> 0 carriers) stable for 6 consecutive polls (9s) or after 75s
+            if (stableCountIterations >= 6 || elapsedSeconds >= 75) {
               console.log(
                 `[Jason LTL] Rate capture complete with ${currentCount} carriers after ${elapsedSeconds}s. Proceeding.`
               );
@@ -527,7 +527,7 @@ export class GLTService {
       if (liveCarriers.length === 0) {
         return {
           success: false,
-          error: `Live rating engine returned 0 carrier quotes within 60 seconds for route ${payload.pickupZip} to ${payload.deliveryZip}. Please check the zip codes, handling units, or weight.`,
+          error: `Live rating engine returned 0 carrier quotes within 120 seconds for route ${payload.pickupZip} to ${payload.deliveryZip}. Please check the zip codes, handling units, or weight.`,
         };
       }
 

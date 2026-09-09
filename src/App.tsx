@@ -3,6 +3,7 @@ import { Navbar } from './components/Navbar';
 import { QuoteForm } from './components/QuoteForm';
 import { CarrierResults } from './components/CarrierResults';
 import { BookingModal } from './components/BookingModal';
+import { LegalAndRulesModal, LegalTab } from './components/LegalAndRulesModal';
 import { CarrierQuote, QuoteRequestPayload, QuoteResult, SystemStatus } from './types';
 import {
   ShieldCheck,
@@ -27,6 +28,7 @@ export default function App() {
   const [bookingSelection, setBookingSelection] = useState<{ carrier: CarrierQuote; withInsurance: boolean } | null>(null);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [authBanner, setAuthBanner] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [legalModalTab, setLegalModalTab] = useState<LegalTab | null>(null);
 
   // Accessorial lists loaded from server
   const [commonAccessorials, setCommonAccessorials] = useState<string[]>([]);
@@ -77,9 +79,13 @@ export default function App() {
     }
 
     if (token) {
+      const cleanToken = token.trim();
+      if (!/^[A-Za-z0-9_-]{4,64}$/.test(cleanToken)) {
+        return;
+      }
       try {
         setLoading(true);
-        const res = await fetch(`/api/quote/${encodeURIComponent(token)}`);
+        const res = await fetch(`/api/quote/${encodeURIComponent(cleanToken)}`);
         if (res.ok) {
           const json = await res.json();
           if (json.success && json.data) {
@@ -109,12 +115,19 @@ export default function App() {
     setLoading(true);
     setError(null);
 
+    const controller = new AbortController();
+    // Allow up to 140s on client to comfortably accommodate 120s deep rating engine
+    const timeoutId = setTimeout(() => controller.abort(), 140000);
+
     try {
       const res = await fetch('/api/quote', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
+        signal: controller.signal,
       });
+
+      clearTimeout(timeoutId);
 
       const data = await res.json();
 
@@ -132,11 +145,18 @@ export default function App() {
       window.location.hash = `quote=${data.data.quoteToken}`;
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err: any) {
-      const cleanErr = (err.message || 'Error occurred while contacting freight rating engine.')
-        .replace(/GLT/gi, 'Direct')
-        .replace(/goglt\.com/gi, 'jasonltl.com');
+      clearTimeout(timeoutId);
+      let cleanErr = err.message || 'Error occurred while contacting freight rating engine.';
+      if (err.name === 'AbortError') {
+        cleanErr = 'Live carrier rating scan reached the 120-second timeout limit. Please check your origin and destination zip codes and try again.';
+      } else {
+        cleanErr = cleanErr
+          .replace(/GLT/gi, 'Direct')
+          .replace(/goglt\.com/gi, 'jasonltl.com');
+      }
       setError(cleanErr);
     } finally {
+      clearTimeout(timeoutId);
       setLoading(false);
     }
   };
@@ -188,7 +208,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#05070A] text-[#F8FAFC] flex flex-col font-['Inter',sans-serif] selection:bg-[#FACC15] selection:text-black">
+    <div className="min-h-screen bg-[var(--bg)] text-[var(--text-bright)] flex flex-col font-['Inter',sans-serif] selection:bg-[#FACC15] selection:text-black transition-colors duration-200">
       {/* Top Navigation */}
       <Navbar
         status={status}
@@ -197,6 +217,7 @@ export default function App() {
         onNewQuote={handleBackToQuote}
         onLogin={handleLogin}
         isLoggingIn={isLoggingIn}
+        onOpenLegal={(tab) => setLegalModalTab(tab)}
       />
 
       {/* Main Content Area: Spacious, Breathable, Not Congested */}
@@ -394,7 +415,7 @@ export default function App() {
       </main>
 
       {/* Clean JASON LTL Minimalist Footer */}
-      <footer className="w-full border-t border-white/[0.08] py-6 px-4 text-center text-xs text-slate-400 space-y-2 bg-[#05070A]/95 mt-auto">
+      <footer className="w-full border-t border-white/[0.08] py-6 px-4 text-center text-xs text-slate-400 space-y-3 bg-white/[0.02] dark:bg-[#05070A]/95 mt-auto transition-colors">
         <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 text-xs">
           <span className="font-black text-white uppercase tracking-wider">
             JASON<span className="text-[#FACC15]">LTL</span> FREIGHT EXCHANGE
@@ -404,10 +425,45 @@ export default function App() {
           <span>&bull;</span>
           <span className="text-[#38BDF8] font-semibold">Direct Carrier Execution</span>
         </div>
+
+        {/* Legal & Operating Policies Navigation */}
+        <div className="flex flex-wrap items-center justify-center gap-4 text-xs pt-1">
+          <button
+            type="button"
+            onClick={() => setLegalModalTab('rules')}
+            className="text-slate-400 hover:text-[#FACC15] underline-offset-4 hover:underline cursor-pointer transition-colors"
+          >
+            Rules &amp; Regulations
+          </button>
+          <span className="text-slate-600">&bull;</span>
+          <button
+            type="button"
+            onClick={() => setLegalModalTab('privacy')}
+            className="text-slate-400 hover:text-[#38BDF8] underline-offset-4 hover:underline cursor-pointer transition-colors"
+          >
+            Privacy Policy
+          </button>
+          <span className="text-slate-600">&bull;</span>
+          <button
+            type="button"
+            onClick={() => setLegalModalTab('terms')}
+            className="text-slate-400 hover:text-emerald-400 underline-offset-4 hover:underline cursor-pointer transition-colors"
+          >
+            Terms of Carriage &amp; Tariffs
+          </button>
+        </div>
+
         <p className="text-xs text-slate-500 max-w-xl mx-auto">
           No double brokering &bull; No ghost carriers &bull; Consistent communication &bull; Guaranteed door-to-door tariffs
         </p>
       </footer>
+
+      {/* Legal, Privacy & Operating Rules Modal */}
+      <LegalAndRulesModal
+        isOpen={legalModalTab !== null}
+        initialTab={legalModalTab || 'rules'}
+        onClose={() => setLegalModalTab(null)}
+      />
 
       {/* Booking Confirmation Modal */}
       {bookingSelection && quoteResult && (

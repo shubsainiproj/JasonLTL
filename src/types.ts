@@ -89,3 +89,34 @@ export interface AccessorialsCatalog {
   origin: string[];
   delivery: string[];
 }
+
+export interface BookingLocationDetails {
+  address: string;
+  phone: string;
+  email: string;
+}
+
+export interface BookingSubmissionPayload {
+  carrierId: string;
+  withInsurance: boolean;
+  bookerEmail: string;
+  pickupDetails: BookingLocationDetails;
+  deliveryDetails: BookingLocationDetails;
+  specialInstructions?: string;
+}
+
+export interface BookingConfirmationResponse {
+  success: boolean;
+  bookingReference: string;
+  quoteToken: string;
+  carrierName: string;
+  serviceClass: string;
+  selectedPrice: number;
+  withInsurance: boolean;
+  pickupDate: string;
+  origin: string;
+  destination: string;
+  emailDispatched: boolean;
+  emailNotice?: string;
+  message: string;
+}

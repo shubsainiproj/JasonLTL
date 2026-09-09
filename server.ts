@@ -15,28 +15,88 @@ import {
 } from './server/accessorials.js';
 import { getQuote, updateQuoteStatus } from './server/quoteStore.js';
 import { QuoteRequestPayload } from './src/types.js';
+import { sendDispatchBookingEmail } from './server/emailService.js';
+import {
+  securityHeaders,
+  createRateLimiter,
+  preventPrototypePollution,
+  validateTokenParam,
+  validateQuotePayload,
+  safeErrorHandler,
+} from './server/security.js';
+
+// Catch unhandled process exceptions to avoid service crashes
+process.on('unhandledRejection', (reason) => {
+  console.error('[Jason LTL Security] Unhandled Rejection:', reason);
+});
+process.on('uncaughtException', (error) => {
+  console.error('[Jason LTL Security] Uncaught Exception:', error);
+});
 
 async function startServer() {
   const app = express();
   const PORT = CONFIG.PORT;
 
-  app.use(express.json());
+  // -------------------------------------------------------------
+  // 1. Security & Hardening Middleware
+  // -------------------------------------------------------------
+  app.disable('x-powered-by');
+  app.use(securityHeaders);
+
+  // Enforce strict JSON body size (prevents memory exhaustion attacks)
+  app.use(express.json({ limit: '64kb' }));
+
+  // Prevent Prototype Pollution & Parameter Tampering
+  app.use(preventPrototypePollution);
+
+  // Rate limiters
+  const globalLimiter = createRateLimiter({
+    windowMs: 60000,
+    maxRequests: 180,
+    message: 'Global rate limit reached. Please wait a moment before sending more requests.',
+  });
+
+  const quoteLimiter = createRateLimiter({
+    windowMs: 120000,
+    maxRequests: 25,
+    message: 'Rate calculation limit reached. Please wait a moment before submitting new quote requests.',
+  });
+
+  const autocompleteLimiter = createRateLimiter({
+    windowMs: 60000,
+    maxRequests: 90,
+    message: 'Location autocomplete limit reached. Please wait a moment.',
+  });
+
+  const authLimiter = createRateLimiter({
+    windowMs: 900000, // 15 minutes
+    maxRequests: 6,
+    message: 'Too many authentication attempts. Please try again in 15 minutes.',
+  });
+
+  const bookingLimiter = createRateLimiter({
+    windowMs: 60000,
+    maxRequests: 15,
+    message: 'Booking request limit reached. Please wait a moment.',
+  });
+
+  app.use('/api', globalLimiter);
 
   // -------------------------------------------------------------
-  // API Endpoints
+  // 2. API Endpoints
   // -------------------------------------------------------------
 
-  // Health check & System / GLT status
+  // Health check & System status
   app.get('/api/status', (req, res) => {
     try {
       const status = gltService.getStatus();
       res.json(status);
     } catch (err: any) {
-      res.status(500).json({ error: err.message });
+      res.status(500).json({ success: false, error: 'Status check failed.' });
     }
   });
 
-  // Manual or initial re-authentication trigger (supports both /api/auth/login and /api/login)
+  // Manual or initial re-authentication trigger
   const handleLogin = async (req: express.Request, res: express.Response) => {
     try {
       const result = await gltService.login();
@@ -45,18 +105,28 @@ async function startServer() {
       }
       res.json(result);
     } catch (err: any) {
-      res.status(500).json({ success: false, message: err.message });
+      res.status(500).json({ success: false, message: 'Session connection failed.' });
     }
   };
 
-  app.post('/api/auth/login', handleLogin);
-  app.post('/api/login', handleLogin);
-  app.get('/api/auth/login', handleLogin);
-  app.get('/api/login', handleLogin);
+  app.post('/api/auth/login', authLimiter, handleLogin);
+  app.post('/api/login', authLimiter, handleLogin);
+  app.get('/api/auth/login', authLimiter, handleLogin);
+  app.get('/api/login', authLimiter, handleLogin);
 
-  // Authenticated Carrier Loads history route (verifies active account loads)
+  // Authenticated Carrier Loads history route (Protected from public unauthorized scraping)
   app.get('/api/loads', async (req, res) => {
     try {
+      const adminKey = req.headers['x-admin-key'] || req.query.admin_key;
+      const requiredKey = process.env.ADMIN_SECRET || process.env.ADMIN_KEY;
+
+      if (requiredKey && adminKey !== requiredKey) {
+        return res.status(403).json({
+          success: false,
+          error: 'Access restricted: Carrier dispatch order book requires administrator privileges.',
+        });
+      }
+
       let session = gltService.getSessionData();
       if (!session?.authToken) {
         await gltService.login();
@@ -73,11 +143,11 @@ async function startServer() {
 
       res.json({
         success: true,
-        account: session.accountName || 'Jason Harris',
+        account: session.accountName || 'Jason CYL Ltd',
         loads: loadsRes.data,
       });
     } catch (err: any) {
-      res.status(500).json({ success: false, error: err.response?.data || err.message });
+      res.status(500).json({ success: false, error: 'Unable to retrieve load records.' });
     }
   });
 
@@ -93,21 +163,26 @@ async function startServer() {
     });
   });
 
-  // Location autocomplete (zip / city / hub lookup)
-  app.get('/api/locations/autocomplete', async (req, res) => {
+  // Location autocomplete (zip / city / hub lookup) with Rate Limiting & Input Clamping
+  app.get('/api/locations/autocomplete', autocompleteLimiter, async (req, res) => {
     try {
-      const query = (req.query.q as string) || '';
-      const country = (req.query.country as string) || 'US';
+      const rawQuery = typeof req.query.q === 'string' ? req.query.q : '';
+      const rawCountry = typeof req.query.country === 'string' ? req.query.country : 'US';
+      const country = rawCountry.toUpperCase() === 'CA' ? 'CA' : 'US';
+
       const session = gltService.getSessionData();
-      const results = await searchLocations(query, session?.authToken, country);
+      const results = await searchLocations(rawQuery, session?.authToken, country);
       res.json(results);
     } catch (err: any) {
-      res.status(500).json({ error: err.message });
+      res.status(500).json({ error: 'Location lookup failed.' });
     }
   });
 
-  // Submit Freight Quote Request
-  app.post('/api/quote', async (req, res) => {
+  // Submit Freight Quote Request with Rate Limiting, Prototype Protection & Strict Payload Validation
+  app.post('/api/quote', quoteLimiter, validateQuotePayload, async (req, res) => {
+    // Keep socket alive for up to 180s to comfortably support 120s multi-carrier calculation
+    req.setTimeout(180000);
+    res.setTimeout(180000);
     try {
       const payload: QuoteRequestPayload = req.body;
       const result = await gltService.submitQuote(payload);
@@ -132,8 +207,8 @@ async function startServer() {
     }
   });
 
-  // Retrieve Quote by Token (for token-based carrier selection page)
-  app.get('/api/quote/:token', (req, res) => {
+  // Retrieve Quote by Token (Protected with Token Parameter Guard)
+  app.get('/api/quote/:token', validateTokenParam, (req, res) => {
     const { token } = req.params;
     const quote = getQuote(token);
     if (!quote) {
@@ -145,42 +220,96 @@ async function startServer() {
     res.json({ success: true, data: quote });
   });
 
-  // Book shipment with carrier
-  app.post('/api/quote/:token/book', (req, res) => {
-    const { token } = req.params;
-    const { carrierId, withInsurance } = req.body;
+  // Book shipment with carrier (Protected with Token Guard & Rate Limiter)
+  app.post('/api/quote/:token/book', bookingLimiter, validateTokenParam, async (req, res) => {
+    try {
+      const { token } = req.params;
+      const {
+        carrierId,
+        withInsurance,
+        bookerEmail,
+        pickupDetails,
+        deliveryDetails,
+        specialInstructions,
+      } = req.body || {};
 
-    const quote = getQuote(token);
-    if (!quote) {
-      return res.status(404).json({ success: false, error: 'Quote not found or expired.' });
+      if (!carrierId || typeof carrierId !== 'string') {
+        return res.status(400).json({ success: false, error: 'Valid carrier identifier is required for booking.' });
+      }
+
+      // Validate booker email
+      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      const cleanBookerEmail = String(bookerEmail || '').trim();
+      if (!cleanBookerEmail || !emailPattern.test(cleanBookerEmail)) {
+        return res.status(400).json({
+          success: false,
+          error: 'Please provide a valid Booker / User Email address for dispatch notification.',
+        });
+      }
+
+      const quote = getQuote(token);
+      if (!quote) {
+        return res.status(404).json({ success: false, error: 'Quote not found or expired.' });
+      }
+
+      const carrier = quote.carriers.find((c) => c.carrierId === carrierId || c.id === carrierId);
+      if (!carrier) {
+        return res.status(400).json({ success: false, error: 'Selected carrier not found in quote options.' });
+      }
+
+      updateQuoteStatus(token, 'booked');
+
+      const bookingReference = `BOL-${Date.now().toString(36).toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`;
+
+      const sanitizedPickup = {
+        address: String(pickupDetails?.address || '').trim(),
+        phone: String(pickupDetails?.phone || '').trim(),
+        email: String(pickupDetails?.email || '').trim(),
+      };
+
+      const sanitizedDelivery = {
+        address: String(deliveryDetails?.address || '').trim(),
+        phone: String(deliveryDetails?.phone || '').trim(),
+        email: String(deliveryDetails?.email || '').trim(),
+      };
+
+      // Trigger Dispatch Email to Jason@cylltd.com with booker in CC
+      const emailResult = await sendDispatchBookingEmail({
+        bookingReference,
+        quote,
+        carrier,
+        withInsurance: Boolean(withInsurance),
+        bookerEmail: cleanBookerEmail,
+        pickupDetails: sanitizedPickup,
+        deliveryDetails: sanitizedDelivery,
+        specialInstructions: typeof specialInstructions === 'string' ? specialInstructions.trim().slice(0, 500) : undefined,
+      });
+
+      res.json({
+        success: true,
+        bookingReference,
+        quoteToken: token,
+        carrierName: carrier.carrierName,
+        serviceClass: carrier.serviceClass,
+        selectedPrice: withInsurance ? carrier.finalRateWithInsurance : carrier.finalRate,
+        withInsurance: Boolean(withInsurance),
+        pickupDate: quote.payload.pickupDate || new Date().toISOString().split('T')[0],
+        origin: quote.payload.pickupLocation,
+        destination: quote.payload.deliveryLocation,
+        emailDispatched: emailResult.success,
+        emailNotice: emailResult.success
+          ? `Dispatch notification emailed to Jason@cylltd.com with ${cleanBookerEmail} in CC.`
+          : `Booking recorded. Dispatch notification pending delivery.`,
+        message: 'Shipment booking confirmed. Carrier dispatch notification scheduled.',
+      });
+    } catch (err: any) {
+      console.error('[Jason LTL Booking Error]:', err);
+      res.status(500).json({ success: false, error: err.message || 'Internal booking dispatch error.' });
     }
-
-    const carrier = quote.carriers.find((c) => c.carrierId === carrierId || c.id === carrierId);
-    if (!carrier) {
-      return res.status(400).json({ success: false, error: 'Selected carrier not found in quote options.' });
-    }
-
-    updateQuoteStatus(token, 'booked');
-
-    const bookingReference = `BOL-${Date.now().toString(36).toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`;
-
-    res.json({
-      success: true,
-      bookingReference,
-      quoteToken: token,
-      carrierName: carrier.carrierName,
-      serviceClass: carrier.serviceClass,
-      selectedPrice: withInsurance ? carrier.finalRateWithInsurance : carrier.finalRate,
-      withInsurance: Boolean(withInsurance),
-      pickupDate: quote.payload.pickupDate || new Date().toISOString().split('T')[0],
-      origin: quote.payload.pickupLocation,
-      destination: quote.payload.deliveryLocation,
-      message: 'Shipment booking confirmed. Carrier dispatch notification scheduled.',
-    });
   });
 
   // -------------------------------------------------------------
-  // Vite Middleware / Static Serving
+  // 3. Vite Middleware / Static Serving
   // -------------------------------------------------------------
   if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({
@@ -197,7 +326,12 @@ async function startServer() {
   }
 
   // -------------------------------------------------------------
-  // Start HTTP Listener
+  // 4. Safe Error Handler (Must be registered last)
+  // -------------------------------------------------------------
+  app.use(safeErrorHandler);
+
+  // -------------------------------------------------------------
+  // 5. Start HTTP Listener
   // -------------------------------------------------------------
   const server = app.listen(PORT, '0.0.0.0', () => {
     console.log(`[Jason LTL] Server running on http://0.0.0.0:${PORT}`);
@@ -219,10 +353,10 @@ async function startServer() {
     }
   });
 
-  // Ensure HTTP connection stays alive during long-polling rating requests (up to 60s)
-  server.setTimeout(120000);
-  server.keepAliveTimeout = 75000;
-  server.headersTimeout = 80000;
+  // Ensure HTTP connection stays alive during long-polling rating requests (up to 120s+)
+  server.setTimeout(180000);
+  server.keepAliveTimeout = 120000;
+  server.headersTimeout = 130000;
 }
 
 startServer().catch((err) => {

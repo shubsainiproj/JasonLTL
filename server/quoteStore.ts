@@ -33,6 +33,26 @@ export function saveQuote(quote: QuoteResult): void {
 }
 
 export function getQuote(token: string): QuoteResult | null {
+  if (typeof token !== 'string' || !token) return null;
+  const inMemory = memoryQuotes.get(token);
+  if (inMemory) return inMemory;
+
+  // Fallback: reload from disk cache in case written by another worker/process
+  try {
+    if (fs.existsSync(STORE_FILE)) {
+      const data = JSON.parse(fs.readFileSync(STORE_FILE, 'utf-8'));
+      if (Array.isArray(data)) {
+        for (const q of data) {
+          if (q && q.quoteToken) {
+            memoryQuotes.set(q.quoteToken, q);
+          }
+        }
+      }
+    }
+  } catch {
+    // ignore read error
+  }
+
   return memoryQuotes.get(token) || null;
 }
 

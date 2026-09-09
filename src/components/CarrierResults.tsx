@@ -243,7 +243,7 @@ export const CarrierResults: React.FC<CarrierResultsProps> = ({
               return (
                 <div
                   key={carrier.id}
-                  className={`p-5 sm:p-6 rounded-2xl bg-[#0B0F17]/85 backdrop-blur-xl border transition-all duration-200 ${
+                  className={`p-5 sm:p-6 rounded-2xl glass transition-all duration-200 ${
                     isBestPrice
                       ? 'border-yellow-400/40 shadow-[0_0_20px_rgba(250,204,21,0.08)]'
                       : 'border-white/[0.08] hover:border-white/[0.18]'

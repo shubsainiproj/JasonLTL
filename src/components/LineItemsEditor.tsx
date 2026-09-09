@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Trash2, Layers, Calculator, Sparkles, AlertCircle } from 'lucide-react';
+import { Plus, Trash2, Layers, Calculator, Sparkles, AlertCircle, Info } from 'lucide-react';
 import { LineItem } from '../types';
 import { calculateDensityPcf, getNMFCClassFromDensity } from '../utils/densityCalculator';
 import { ExcludedCommoditiesModal } from './ExcludedCommoditiesModal';
@@ -113,7 +113,7 @@ export const LineItemsEditor: React.FC<LineItemsEditorProps> = ({
     const w = Number(item.width) || 0;
     const h = Number(item.height) || 0;
     const wt = Number(item.weight) || 0;
-    const density = calculateDensityPcf(l, w, h, wt, item.dimUnit, item.weightUnit);
+    const density = calculateDensityPcf(l, w, h, wt, item.dimUnit, item.weightUnit, Number(item.units) || 1);
 
     const calcClass = getNMFCClassFromDensity(density);
     const updated = items.map((it, i) => {
@@ -129,12 +129,11 @@ export const LineItemsEditor: React.FC<LineItemsEditorProps> = ({
     onChange(updated);
   };
 
-  // Calculate totals
+  // Calculate totals (Weight entered is TOTAL line item weight, not per unit)
   const totalUnits = items.reduce((sum, item) => sum + (Number(item.units) || 0), 0);
   const totalWeightLbs = items.reduce((sum, item) => {
     const w = Number(item.weight) || 0;
-    const units = Number(item.units) || 1;
-    return sum + (item.weightUnit === 'kg' ? w * 2.20462 : w) * units;
+    return sum + (item.weightUnit === 'kg' ? w * 2.20462 : w);
   }, 0);
 
   return (
@@ -175,6 +174,17 @@ export const LineItemsEditor: React.FC<LineItemsEditorProps> = ({
         </button>
       </div>
 
+      {/* Weight Guideline Note Banner */}
+      <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/25 text-amber-200/90 text-xs leading-relaxed">
+        <Info className="w-4 h-4 text-[#FACC15] shrink-0 mt-0.5" />
+        <div>
+          <span className="font-bold text-white uppercase tracking-wider block text-[11px] mb-0.5">
+            Shipment Weight Notice (Total Combined Weight):
+          </span>
+          Weight entered is the <strong>TOTAL combined weight</strong> for that line item (not per individual unit/pallet). The system does <strong>not</strong> multiply units &times; weight. For example: If you have <strong>10 Pallets</strong> weighing <strong>15,000 lbs in total</strong>, enter <strong>15,000</strong>.
+        </div>
+      </div>
+
       {/* Line Items List */}
       <div className="space-y-4">
         {items.map((item, index) => {
@@ -182,7 +192,7 @@ export const LineItemsEditor: React.FC<LineItemsEditorProps> = ({
           const w = Number(item.width) || 0;
           const h = Number(item.height) || 0;
           const wt = Number(item.weight) || 0;
-          const densityPcf = calculateDensityPcf(l, w, h, wt, item.dimUnit, item.weightUnit);
+          const densityPcf = calculateDensityPcf(l, w, h, wt, item.dimUnit, item.weightUnit, Number(item.units) || 1);
           const densityDisplay = densityPcf !== null ? `${densityPcf.toFixed(1)} PCF` : '—';
           const suggestedClass = getNMFCClassFromDensity(densityPcf);
 
@@ -253,7 +263,7 @@ export const LineItemsEditor: React.FC<LineItemsEditorProps> = ({
               </div>
 
               {/* Row Bottom: Units, Weight, Dimensions (L x W x H), NMFC Class with Auto Calculate, Density */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3 text-xs pt-1">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 text-xs pt-1">
                 {/* Units */}
                 <div className="hucount lineitem-inputs">
                   <label className="block text-[11px] uppercase font-semibold text-slate-400 mb-1">
@@ -270,11 +280,11 @@ export const LineItemsEditor: React.FC<LineItemsEditorProps> = ({
                   />
                 </div>
 
-                {/* Weight + Unit */}
+                {/* Weight + Unit (Total combined weight) */}
                 <div className="weight lineitem-inputs">
                   <div className="flex items-center justify-between mb-1">
-                    <label className="text-[11px] uppercase font-semibold text-slate-400">
-                      Weight <span className="text-[#FACC15]">*</span>
+                    <label className="text-[11px] uppercase font-semibold text-slate-400" title="Total weight of all units in this line item">
+                      Total Wt <span className="text-[#FACC15]">*</span>
                     </label>
                     <button
                       type="button"
@@ -292,13 +302,13 @@ export const LineItemsEditor: React.FC<LineItemsEditorProps> = ({
                     required
                     value={item.weight === ('' as any) ? '' : item.weight}
                     onChange={(e) => handleNumberInput(index, 'weight', e.target.value, false)}
-                    placeholder="e.g. 650"
+                    placeholder="Total lbs"
                     className="glass-input w-full px-3 py-2 rounded-lg text-sm font-bold"
                   />
                 </div>
 
                 {/* Dimensions (Length x Width x Height) */}
-                <div className="dimensions lineitem-inputs col-span-2">
+                <div className="dimensions lineitem-inputs col-span-2 sm:col-span-2 md:col-span-2">
                   <div className="flex items-center justify-between mb-1">
                     <label className="text-[11px] uppercase font-semibold text-slate-400">
                       Dimensions: L &times; W &times; H ({item.dimUnit})

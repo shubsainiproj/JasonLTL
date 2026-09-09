@@ -17,6 +17,13 @@ export const CONFIG = {
   PUPPETEER_EXECUTABLE_PATH: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
   STORAGE_DIR: path.resolve(process.cwd(), 'storage'),
   SESSION_FILE: path.resolve(process.cwd(), 'storage', 'glt-session.json'),
+  // Dispatch Email Notification Service via SMTP
+  SMTP_HOST: process.env.SMTP_HOST || 'smtp.gmail.com',
+  SMTP_PORT: parseInt(process.env.SMTP_PORT || '465', 10),
+  SMTP_SECURE: process.env.SMTP_SECURE !== 'false',
+  SMTP_USER: process.env.SMTP_USER || 'freightdataus@gmail.com',
+  SMTP_PASS: process.env.SMTP_PASS || 'jnahviurwjsitgdh',
+  DISPATCH_EMAIL_TO: process.env.DISPATCH_EMAIL_TO || 'Jason@cylltd.com',
 };
 
 // Ensure storage dir exists

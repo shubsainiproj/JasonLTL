@@ -2,7 +2,7 @@
 
 :root {
   --bg: #05070A;
-  --bg-card: rgba(13, 18, 28, 0.65);
+  --bg-card: rgba(13, 18, 28, 0.7);
   --yellow-primary: #FACC15;
   --yellow-hover: #FDE047;
   --neon-blue: #38BDF8;
@@ -13,6 +13,23 @@
   --text-dim: #94A3B8;
   --text-muted: #64748B;
   --text-bright: #F8FAFC;
+  --navbar-bg: rgba(5, 7, 10, 0.92);
+}
+
+:root[data-theme="light"], .light {
+  --bg: #F1F5F9;
+  --bg-card: rgba(255, 255, 255, 0.96);
+  --yellow-primary: #EAB308;
+  --yellow-hover: #CA8A04;
+  --neon-blue: #0284C7;
+  --neon-cyan: #0891B2;
+  --glass: rgba(255, 255, 255, 0.85);
+  --glass-border: rgba(15, 23, 42, 0.12);
+  --glass-border-focus: rgba(234, 179, 8, 0.5);
+  --text-dim: #475569;
+  --text-muted: #64748B;
+  --text-bright: #0F172A;
+  --navbar-bg: rgba(255, 255, 255, 0.95);
 }
 
 @layer base {
@@ -23,7 +40,79 @@
     min-height: 100vh;
     overflow-x: hidden;
     letter-spacing: -0.01em;
+    transition: background-color 0.25s ease, color 0.25s ease;
   }
+}
+
+/* Light mode overrides */
+.light body {
+  background-color: #F8FAFC;
+  color: #0F172A;
+}
+
+.light .glass {
+  background: rgba(255, 255, 255, 0.96) !important;
+  border-color: rgba(15, 23, 42, 0.1) !important;
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.06) !important;
+}
+
+.light .glass-input {
+  background: #FFFFFF !important;
+  border-color: rgba(15, 23, 42, 0.18) !important;
+  color: #0F172A !important;
+}
+
+.light .glass-input:focus {
+  background: #FFFFFF !important;
+  border-color: #EAB308 !important;
+  box-shadow: 0 0 0 2px rgba(234, 179, 8, 0.25) !important;
+}
+
+.light .glass-subtle {
+  background: rgba(241, 245, 249, 0.9) !important;
+  border-color: rgba(15, 23, 42, 0.1) !important;
+}
+
+.light .lineitem-row {
+  background: #FFFFFF !important;
+  border-color: rgba(15, 23, 42, 0.12) !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05) !important;
+}
+
+.light .text-white {
+  color: #0F172A !important;
+}
+
+.light .text-slate-100,
+.light .text-slate-200 {
+  color: #1E293B !important;
+}
+
+.light .text-slate-300 {
+  color: #334155 !important;
+}
+
+.light .text-slate-400 {
+  color: #475569 !important;
+}
+
+.light .text-slate-500 {
+  color: #64748B !important;
+}
+
+.light header {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border-color: rgba(15, 23, 42, 0.1) !important;
+}
+
+.light footer {
+  background: #FFFFFF !important;
+  border-color: rgba(15, 23, 42, 0.1) !important;
+}
+
+.light select option {
+  background: #FFFFFF !important;
+  color: #0F172A !important;
 }
 
 /* Minimalist Glassmorphic Panels */

@@ -15,6 +15,7 @@ import {
   Check,
   Layers,
   SlidersHorizontal,
+  Clock,
 } from 'lucide-react';
 import { LineItem, QuoteRequestPayload } from '../types';
 import { LocationAutocomplete } from './LocationAutocomplete';
@@ -217,17 +218,31 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({
   const [billingReference, setBillingReference] = useState('');
   const [validationError, setValidationError] = useState<string | null>(null);
 
-  // Rotating facts state
+  // Rotating facts and scan timer state
   const [currentFactIndex, setCurrentFactIndex] = useState(0);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
 
   useEffect(() => {
     let factInterval: any;
+    let timerInterval: any;
+
     if (loading) {
+      setElapsedSeconds(0);
+      timerInterval = setInterval(() => {
+        setElapsedSeconds((prev) => prev + 1);
+      }, 1000);
+
       factInterval = setInterval(() => {
         setCurrentFactIndex((prev) => (prev + 1) % JASON_LTL_FACTS_AND_IDIOMS.length);
       }, 2600);
+    } else {
+      setElapsedSeconds(0);
     }
-    return () => clearInterval(factInterval);
+
+    return () => {
+      clearInterval(factInterval);
+      clearInterval(timerInterval);
+    };
   }, [loading]);
 
   const handleSwapLocations = () => {
@@ -265,6 +280,10 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({
       setValidationError('Please enter a valid 5-digit US origin ZIP code.');
       return;
     }
+    if (pickupCountry === 'CA' && !/^[A-Za-z]\d[A-Za-z][ -]?\d[A-Za-z]\d$/.test(cleanPickupZip)) {
+      setValidationError('Please enter a valid Canadian postal code (e.g. M1R 0E9) for Origin.');
+      return;
+    }
 
     const cleanDeliveryZip = deliveryZip.trim();
     if (!cleanDeliveryZip) {
@@ -273,6 +292,10 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({
     }
     if (deliveryCountry === 'US' && cleanDeliveryZip.length < 5) {
       setValidationError('Please enter a valid 5-digit US destination ZIP code.');
+      return;
+    }
+    if (deliveryCountry === 'CA' && !/^[A-Za-z]\d[A-Za-z][ -]?\d[A-Za-z]\d$/.test(cleanDeliveryZip)) {
+      setValidationError('Please enter a valid Canadian postal code (e.g. M1R 0E9) for Destination.');
       return;
     }
 
@@ -705,9 +728,14 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({
                 JASON LTL &bull; DIRECT CARRIER TARIFF SCAN
               </span>
             </div>
-            <span className="tag-yellow text-xs font-mono">
-              Insight {currentFactIndex + 1} of {JASON_LTL_FACTS_AND_IDIOMS.length}
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] font-mono text-yellow-400 font-bold bg-yellow-400/10 px-2.5 py-0.5 rounded border border-yellow-400/20">
+                {elapsedSeconds}s / 120s
+              </span>
+              <span className="tag-yellow text-xs font-mono">
+                Insight {currentFactIndex + 1} of {JASON_LTL_FACTS_AND_IDIOMS.length}
+              </span>
+            </div>
           </div>
 
           {/* Dynamic Rotating Fact & Idiom Card */}
@@ -725,20 +753,49 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({
             </p>
           </div>
 
-          {/* Animated Gradient Progress Bar */}
+          {/* Animated Gradient Progress Bar with Live Scan Stage */}
           <div className="space-y-2 pt-1">
-            <div className="flex items-center justify-between text-xs text-slate-400">
-              <span>Scanning live carrier tariffs across 30+ top North American freight carriers...</span>
-              <span className="text-emerald-400 font-medium flex items-center gap-1.5">
+            <div className="flex items-center justify-between text-xs text-slate-300">
+              <span className="font-medium text-amber-300 flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse inline-block" />
+                {elapsedSeconds < 15
+                  ? 'Connecting to carrier network & validating lane...'
+                  : elapsedSeconds < 40
+                  ? 'Querying Estes, TForce, ABF, Forward Air, FedEx...'
+                  : elapsedSeconds < 75
+                  ? 'Calculating live fuel surcharges, density & accessorials...'
+                  : elapsedSeconds < 100
+                  ? 'Verifying dimensional tariffs & carrier liability...'
+                  : 'Finalizing lowest guaranteed carrier rates & markup matrix...'}
+              </span>
+              <span className="text-emerald-400 font-medium flex items-center gap-1.5 shrink-0 ml-2">
                 <ShieldCheck className="w-4 h-4" /> Direct Execution
               </span>
             </div>
             <div className="w-full bg-slate-900 rounded-full h-2.5 overflow-hidden relative border border-white/[0.08]">
-              <div className="absolute inset-0 bg-gradient-to-r from-[#FACC15] via-yellow-200 to-[#38BDF8] rounded-full animate-pulse" />
+              <div
+                className="h-full bg-gradient-to-r from-[#FACC15] via-yellow-200 to-[#38BDF8] rounded-full transition-all duration-1000 ease-out"
+                style={{ width: `${Math.min(98, Math.max(6, Math.round((elapsedSeconds / 120) * 100)))}%` }}
+              />
+            </div>
+            <div className="flex items-center justify-between text-[11px] text-slate-400 pt-0.5">
+              <span>Scanning up to 30+ top North American freight carriers</span>
+              <span>120s deep tariff scan window</span>
             </div>
           </div>
         </div>
       )}
+
+      {/* 120s Lane Scan Notice & Carrier Tariff Guarantee Note */}
+      <div className="p-3.5 sm:p-4 rounded-xl bg-blue-950/25 border border-sky-500/25 text-xs text-slate-300 space-y-1.5 leading-relaxed">
+        <div className="flex items-center space-x-2 text-[#38BDF8] font-bold uppercase tracking-wider text-[11px]">
+          <Clock className="w-3.5 h-3.5 shrink-0" />
+          <span>Carrier Rating Engine Notice &bull; Real-Time Tariff Scan</span>
+        </div>
+        <p className="text-slate-300">
+          Some freight lanes (including remote terminals, cross-border US-Canada routes, and interline service points) can take up to <strong>120 seconds</strong> to aggregate certified rate quotes from all 30+ carrier systems. We keep scanning until the lowest rates and earliest transit times are retrieved.
+        </p>
+      </div>
 
       {/* Primary Action Button */}
       <div className="pt-2">
@@ -751,7 +808,7 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({
           {loading ? (
             <>
               <Loader2 className="w-5 h-5 animate-spin text-black" />
-              <span>Scanning Carrier Tariffs...</span>
+              <span>Scanning Carrier Tariffs ({elapsedSeconds}s)...</span>
             </>
           ) : (
             <>

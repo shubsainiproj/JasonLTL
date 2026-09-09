@@ -40,7 +40,8 @@ export function calculateDensityPcf(
   height: number,
   weight: number,
   dimUnit: 'in' | 'cm' = 'in',
-  weightUnit: 'lbs' | 'kg' = 'lbs'
+  weightUnit: 'lbs' | 'kg' = 'lbs',
+  units: number = 1
 ): number | null {
   if (!length || !width || !height || !weight || length <= 0 || width <= 0 || height <= 0 || weight <= 0) {
     return null;
@@ -53,14 +54,15 @@ export function calculateDensityPcf(
 
   // Cubic inches to cubic feet (1728 cu inches = 1 cu ft)
   const cuInches = lIn * wIn * hIn;
-  const cuFeet = cuInches / 1728;
+  const singleCuFeet = cuInches / 1728;
+  const totalCuFeet = singleCuFeet * Math.max(1, Number(units) || 1);
 
-  // Weight to lbs
+  // Weight to lbs (Weight is TOTAL line item weight, not per unit)
   const weightLbs = weightUnit === 'kg' ? weight * 2.20462 : weight;
 
-  if (cuFeet <= 0) return null;
+  if (totalCuFeet <= 0) return null;
 
-  const density = weightLbs / cuFeet;
+  const density = weightLbs / totalCuFeet;
   return Math.round(density * 10) / 10;
 }
 

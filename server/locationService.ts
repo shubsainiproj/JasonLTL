@@ -73,11 +73,16 @@ export async function searchLocations(query: string, token?: string, countryCode
   const isCanada = countryCode?.toUpperCase() === 'CA';
   const defaultHubs = isCanada ? CA_POSTAL_HUBS : US_POSTAL_HUBS;
 
-  if (!query || query.trim().length < 2) {
+  // Sanitize query to prevent parameter injection or excessive length
+  const clean = String(query || '')
+    .replace(/[^\w\s,-]/gi, '')
+    .trim()
+    .slice(0, 50);
+
+  if (!clean || clean.length < 2) {
     return defaultHubs.slice(0, 8);
   }
 
-  const clean = query.trim();
   const apiCountry = isCanada ? 'CA' : 'US';
 
   // If token is provided, query carrier live /api/locations endpoint
