@@ -377,10 +377,10 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({
 
       {/* 1. Origin & Destination Routing with Country Select Option */}
       <div className="glass p-6 sm:p-7 space-y-5 stops">
-        <div className="flex items-center justify-between border-b border-white/[0.08] pb-4">
+        <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/[0.08] pb-4">
           <div className="flex items-center space-x-3">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#FACC15] shadow-[0_0_8px_rgba(250,204,21,0.6)]" />
-            <h2 className="text-sm sm:text-base font-bold uppercase tracking-wider text-white">
+            <span className="w-2.5 h-2.5 rounded-full bg-yellow-500 dark:bg-[#FACC15] shadow-[0_0_8px_rgba(250,204,21,0.6)]" />
+            <h2 className="text-sm sm:text-base font-bold uppercase tracking-wider text-slate-900 dark:text-white">
               1. Origin &amp; Destination Routing
             </h2>
           </div>
@@ -413,7 +413,7 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({
               id="btn-swap-locations"
               type="button"
               onClick={handleSwapLocations}
-              className="p-3 rounded-xl bg-white/[0.04] hover:bg-yellow-400/15 border border-white/[0.1] hover:border-yellow-400/40 text-slate-300 hover:text-[#FACC15] transition-all cursor-pointer shadow-sm"
+              className="p-3 rounded-xl bg-white dark:bg-white/[0.04] hover:bg-yellow-400/20 border border-slate-200 dark:border-white/[0.1] hover:border-yellow-400 text-slate-700 dark:text-slate-300 hover:text-yellow-600 dark:hover:text-[#FACC15] transition-all cursor-pointer shadow-sm"
               title="Swap Origin and Destination"
             >
               <ArrowRightLeft className="w-4 h-4" />
@@ -441,7 +441,7 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({
         {/* Pickup Date Picker */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">
+            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
               Pickup Ready Date
             </label>
             <div className="relative flex items-center">
@@ -450,7 +450,7 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({
                 value={pickupDate}
                 min={new Date().toISOString().split('T')[0]}
                 onChange={(e) => setPickupDate(e.target.value)}
-                className="glass-input w-full px-3.5 py-3 rounded-lg text-sm text-white font-medium cursor-pointer"
+                className="glass-input w-full px-3.5 py-3 rounded-lg text-sm text-slate-900 dark:text-white font-medium cursor-pointer"
               />
             </div>
           </div>
@@ -459,14 +459,14 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({
 
       {/* 2. Line Items Section with AUTO CALCULATE CLASS */}
       <div className="glass p-6 sm:p-7 space-y-5">
-        <div className="flex items-center justify-between border-b border-white/[0.08] pb-4">
+        <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/[0.08] pb-4">
           <div className="flex items-center space-x-3">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#FACC15] shadow-[0_0_8px_rgba(250,204,21,0.6)]" />
-            <h2 className="text-sm sm:text-base font-bold uppercase tracking-wider text-white">
+            <span className="w-2.5 h-2.5 rounded-full bg-yellow-500 dark:bg-[#FACC15] shadow-[0_0_8px_rgba(250,204,21,0.6)]" />
+            <h2 className="text-sm sm:text-base font-bold uppercase tracking-wider text-slate-900 dark:text-white">
               2. Freight Specifications &amp; NMFC Classes
             </h2>
           </div>
-          <span className="text-xs font-mono text-slate-400">
+          <span className="text-xs font-mono text-slate-500 dark:text-slate-400">
             {lineItems.length} Line Item{lineItems.length === 1 ? '' : 's'}
           </span>
         </div>
@@ -481,14 +481,14 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({
 
       {/* 3. ACCESSORIALS SECTION (Matching Reference Structure) */}
       <div className="glass p-6 sm:p-7 space-y-5">
-        <div className="flex items-center justify-between border-b border-white/[0.08] pb-4">
+        <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/[0.08] pb-4">
           <div className="flex items-center space-x-3">
             <span className="w-2.5 h-2.5 rounded-full bg-[#FACC15] shadow-[0_0_8px_rgba(250,204,21,0.6)]" />
             <div>
-              <h2 className="text-sm sm:text-base font-bold uppercase tracking-wider text-white">
+              <h2 className="text-sm sm:text-base font-bold uppercase tracking-wider text-slate-900 dark:text-white">
                 3. Accessorials &amp; Handling Options
               </h2>
-              <p className="text-xs text-slate-400 mt-0.5">
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                 Select equipment, dock, and delivery handling requirements
               </p>
             </div>
@@ -499,9 +499,9 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({
             id="more-accessorials"
             type="button"
             onClick={() => setMoreModalOpen(true)}
-            className="row-accessorials__button flex items-center space-x-2 px-3.5 py-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.12] hover:border-yellow-400/40 text-xs font-bold text-slate-200 transition-all cursor-pointer shadow-sm"
+            className="row-accessorials__button flex items-center space-x-2 px-3.5 py-2 rounded-xl bg-white dark:bg-white/[0.04] hover:bg-slate-50 dark:hover:bg-white/[0.08] border border-slate-200 dark:border-white/[0.12] hover:border-yellow-400/60 text-xs font-bold text-slate-700 dark:text-slate-200 transition-all cursor-pointer shadow-sm"
           >
-            <SlidersHorizontal className="w-3.5 h-3.5 text-[#FACC15]" />
+            <SlidersHorizontal className="w-3.5 h-3.5 text-yellow-500 dark:text-[#FACC15]" />
             <span>More Accessorials</span>
             {moreSelectedCount > 0 && (
               <span className="px-1.5 py-0.5 rounded-full bg-yellow-400 text-slate-950 font-mono text-[10px] font-bold">
@@ -514,8 +514,8 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({
         {/* Row of Origin vs Delivery Accessorials */}
         <div className="row-accessorials__row grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Origin / Pickup Options */}
-          <div className="row-accessorials__information p-4 rounded-xl bg-[#0B0F17]/60 border border-white/[0.08] space-y-3">
-            <div className="text-xs font-bold text-[#38BDF8] uppercase tracking-wider flex items-center gap-1.5">
+          <div className="row-accessorials__information p-4 rounded-xl bg-slate-50/80 dark:bg-[#0B0F17]/60 border border-slate-200/80 dark:border-white/[0.08] space-y-3 shadow-sm">
+            <div className="text-xs font-bold text-sky-600 dark:text-[#38BDF8] uppercase tracking-wider flex items-center gap-1.5">
               <span>Pickup Accessorials</span>
             </div>
             <div className="space-y-2">
@@ -527,8 +527,8 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({
                     htmlFor={acc.id}
                     className={`flex items-center space-x-3 p-2.5 rounded-lg border transition-all cursor-pointer select-none ${
                       checked
-                        ? 'bg-yellow-400/15 border-yellow-400/40 text-white'
-                        : 'bg-white/[0.02] border-white/[0.06] hover:bg-white/[0.04] text-slate-300'
+                        ? 'bg-yellow-400/15 border-yellow-400/50 text-slate-900 dark:text-white font-semibold'
+                        : 'bg-white dark:bg-white/[0.02] border-slate-200 dark:border-white/[0.06] hover:bg-slate-50 dark:hover:bg-white/[0.04] text-slate-700 dark:text-slate-300'
                     }`}
                   >
                     <input
@@ -542,12 +542,12 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({
                       className={`w-4 h-4 rounded border flex items-center justify-center transition-all ${
                         checked
                           ? 'bg-yellow-400 border-yellow-400 text-slate-950'
-                          : 'border-slate-500 bg-black/40'
+                          : 'border-slate-300 dark:border-slate-500 bg-white dark:bg-black/40'
                       }`}
                     >
                       {checked && <Check className="w-3 h-3 stroke-[3]" />}
                     </div>
-                    <span className="text-xs font-semibold">{acc.name}</span>
+                    <span className="text-xs">{acc.name}</span>
                   </label>
                 );
               })}
@@ -555,8 +555,8 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({
           </div>
 
           {/* Delivery Options */}
-          <div className="row-accessorials__information p-4 rounded-xl bg-[#0B0F17]/60 border border-white/[0.08] space-y-3">
-            <div className="text-xs font-bold text-[#38BDF8] uppercase tracking-wider flex items-center gap-1.5">
+          <div className="row-accessorials__information p-4 rounded-xl bg-slate-50/80 dark:bg-[#0B0F17]/60 border border-slate-200/80 dark:border-white/[0.08] space-y-3 shadow-sm">
+            <div className="text-xs font-bold text-sky-600 dark:text-[#38BDF8] uppercase tracking-wider flex items-center gap-1.5">
               <span>Delivery Accessorials</span>
             </div>
             <div className="space-y-2">
@@ -568,8 +568,8 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({
                     htmlFor={acc.id}
                     className={`flex items-center space-x-3 p-2.5 rounded-lg border transition-all cursor-pointer select-none ${
                       checked
-                        ? 'bg-yellow-400/15 border-yellow-400/40 text-white'
-                        : 'bg-white/[0.02] border-white/[0.06] hover:bg-white/[0.04] text-slate-300'
+                        ? 'bg-yellow-400/15 border-yellow-400/50 text-slate-900 dark:text-white font-semibold'
+                        : 'bg-white dark:bg-white/[0.02] border-slate-200 dark:border-white/[0.06] hover:bg-slate-50 dark:hover:bg-white/[0.04] text-slate-700 dark:text-slate-300'
                     }`}
                   >
                     <input
@@ -583,12 +583,12 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({
                       className={`w-4 h-4 rounded border flex items-center justify-center transition-all ${
                         checked
                           ? 'bg-yellow-400 border-yellow-400 text-slate-950'
-                          : 'border-slate-500 bg-black/40'
+                          : 'border-slate-300 dark:border-slate-500 bg-white dark:bg-black/40'
                       }`}
                     >
                       {checked && <Check className="w-3 h-3 stroke-[3]" />}
                     </div>
-                    <span className="text-xs font-semibold">{acc.name}</span>
+                    <span className="text-xs">{acc.name}</span>
                   </label>
                 );
               })}
@@ -597,8 +597,8 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({
         </div>
 
         {/* General Accessorials Container */}
-        <div className="general-accessorials-container p-4 rounded-xl bg-[#0B0F17]/60 border border-white/[0.08] space-y-3">
-          <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+        <div className="general-accessorials-container p-4 rounded-xl bg-slate-50/80 dark:bg-[#0B0F17]/60 border border-slate-200/80 dark:border-white/[0.08] space-y-3 shadow-sm">
+          <div className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
             General Handling Requirements
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -610,8 +610,8 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({
                   htmlFor={acc.id}
                   className={`flex items-center space-x-3 p-2.5 rounded-lg border transition-all cursor-pointer select-none ${
                     checked
-                      ? 'bg-yellow-400/15 border-yellow-400/40 text-white'
-                      : 'bg-white/[0.02] border-white/[0.06] hover:bg-white/[0.04] text-slate-300'
+                      ? 'bg-yellow-400/15 border-yellow-400/50 text-slate-900 dark:text-white font-semibold'
+                      : 'bg-white dark:bg-white/[0.02] border-slate-200 dark:border-white/[0.06] hover:bg-slate-50 dark:hover:bg-white/[0.04] text-slate-700 dark:text-slate-300'
                   }`}
                 >
                   <input
@@ -625,12 +625,12 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({
                     className={`w-4 h-4 rounded border flex items-center justify-center transition-all ${
                       checked
                         ? 'bg-yellow-400 border-yellow-400 text-slate-950'
-                        : 'border-slate-500 bg-black/40'
+                        : 'border-slate-300 dark:border-slate-500 bg-white dark:bg-black/40'
                     }`}
                   >
                     {checked && <Check className="w-3 h-3 stroke-[3]" />}
                   </div>
-                  <span className="text-xs font-semibold">{acc.name}</span>
+                  <span className="text-xs">{acc.name}</span>
                 </label>
               );
             })}
@@ -638,12 +638,12 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({
         </div>
 
         {/* Accessorial & PTL Transit Advisory Card */}
-        <div className="p-4 rounded-xl bg-yellow-400/5 border border-yellow-400/20 text-xs sm:text-sm text-slate-300 leading-relaxed space-y-2">
+        <div className="p-4 rounded-xl bg-amber-50/70 dark:bg-yellow-400/5 border border-amber-200 dark:border-yellow-400/20 text-xs sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed space-y-2">
           <p>
-            <strong className="text-[#FACC15] font-bold">Cost Transparency:</strong> Standard accessorials carry minimal cost impact unless strict appointments or specialized hydraulic equipment are required.
+            <strong className="text-amber-800 dark:text-[#FACC15] font-bold">Cost Transparency:</strong> Standard accessorials carry minimal cost impact unless strict appointments or specialized hydraulic equipment are required.
           </p>
-          <p className="text-slate-400 text-xs">
-            For strict delivery appointment windows or high-volume freight, we recommend <strong className="text-[#38BDF8]">PTL (Partial Truckload)</strong> to avoid multi-hub cross-docking and guarantee direct appointment delivery.
+          <p className="text-slate-600 dark:text-slate-400 text-xs">
+            For strict delivery appointment windows or high-volume freight, we recommend <strong className="text-sky-700 dark:text-[#38BDF8]">PTL (Partial Truckload)</strong> to avoid multi-hub cross-docking and guarantee direct appointment delivery.
           </p>
         </div>
       </div>
@@ -653,23 +653,23 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({
         <button
           type="button"
           onClick={() => setShowOptional(!showOptional)}
-          className="w-full flex items-center justify-between text-xs sm:text-sm font-semibold text-slate-300 hover:text-white transition-colors cursor-pointer"
+          className="w-full flex items-center justify-between text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
         >
           <div className="flex items-center space-x-2.5">
-            <span className="text-[#FACC15] font-extrabold text-base">+</span>
+            <span className="text-yellow-600 dark:text-[#FACC15] font-extrabold text-base">+</span>
             <span>Optional Declared Cargo Value &amp; Shipper Reference / PO</span>
           </div>
           {showOptional ? (
-            <ChevronUp className="w-4 h-4 text-slate-400" />
+            <ChevronUp className="w-4 h-4 text-slate-500 dark:text-slate-400" />
           ) : (
-            <ChevronDown className="w-4 h-4 text-slate-400" />
+            <ChevronDown className="w-4 h-4 text-slate-500 dark:text-slate-400" />
           )}
         </button>
 
         {showOptional && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 mt-3 border-t border-white/[0.08] animate-in fade-in duration-150">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 mt-3 border-t border-slate-200 dark:border-white/[0.08] animate-in fade-in duration-150">
             <div>
-              <label className="block text-xs uppercase font-semibold text-slate-400 mb-1.5">
+              <label className="block text-xs uppercase font-semibold text-slate-600 dark:text-slate-400 mb-1.5">
                 Declared Cargo Value ($ USD)
               </label>
               <div className="relative">
@@ -691,7 +691,7 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({
             </div>
 
             <div>
-              <label className="block text-xs uppercase font-semibold text-slate-400 mb-1.5">
+              <label className="block text-xs uppercase font-semibold text-slate-600 dark:text-slate-400 mb-1.5">
                 Shipper Reference / PO Number
               </label>
               <input
@@ -708,10 +708,10 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({
 
       {/* Error Displays */}
       {(validationError || error) && (
-        <div className="p-4 rounded-xl bg-rose-950/40 border border-rose-500/40 text-rose-200 text-xs sm:text-sm flex items-start space-x-3 animate-in fade-in duration-200">
-          <AlertCircle className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" />
+        <div className="p-4 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-500/40 text-rose-800 dark:text-rose-200 text-xs sm:text-sm flex items-start space-x-3 animate-in fade-in duration-200">
+          <AlertCircle className="w-5 h-5 text-rose-500 dark:text-rose-400 shrink-0 mt-0.5" />
           <div className="space-y-0.5">
-            <div className="font-bold uppercase tracking-wider text-xs text-rose-300">Notice</div>
+            <div className="font-bold uppercase tracking-wider text-xs text-rose-700 dark:text-rose-300">Notice</div>
             <p>{sanitizeNoticeText(validationError || error)}</p>
           </div>
         </div>
@@ -719,17 +719,17 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({
 
       {/* Dynamic Jason LTL Loading Box with Rotating Idioms & News */}
       {loading && (
-        <div className="p-6 sm:p-7 rounded-2xl bg-black/90 border border-yellow-400/40 shadow-2xl text-slate-200 space-y-4 animate-in fade-in duration-200">
+        <div className="p-6 sm:p-7 rounded-2xl bg-white/95 dark:bg-[#0B0F17]/95 border border-yellow-400/50 shadow-2xl text-slate-800 dark:text-slate-200 space-y-4 animate-in fade-in duration-200">
           {/* Header */}
-          <div className="flex items-center justify-between border-b border-white/[0.1] pb-3.5">
+          <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/[0.1] pb-3.5">
             <div className="flex items-center space-x-3">
-              <div className="w-3 h-3 rounded-full bg-[#FACC15] animate-ping" />
-              <span className="font-extrabold text-xs sm:text-sm uppercase tracking-wider text-white">
+              <div className="w-3 h-3 rounded-full bg-yellow-500 dark:bg-[#FACC15] animate-ping" />
+              <span className="font-extrabold text-xs sm:text-sm uppercase tracking-wider text-slate-900 dark:text-white">
                 JASON LTL &bull; DIRECT CARRIER TARIFF SCAN
               </span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-[11px] font-mono text-yellow-400 font-bold bg-yellow-400/10 px-2.5 py-0.5 rounded border border-yellow-400/20">
+              <span className="text-[11px] font-mono text-yellow-800 dark:text-yellow-400 font-bold bg-yellow-400/20 px-2.5 py-0.5 rounded border border-yellow-400/40">
                 {elapsedSeconds}s / 120s
               </span>
               <span className="tag-yellow text-xs font-mono">
@@ -739,25 +739,25 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({
           </div>
 
           {/* Dynamic Rotating Fact & Idiom Card */}
-          <div className="p-4 sm:p-5 rounded-xl bg-white/[0.03] border border-white/[0.1] space-y-2 transition-all duration-300">
+          <div className="p-4 sm:p-5 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/[0.1] space-y-2 transition-all duration-300">
             <div className="flex items-center space-x-2.5">
-              <span className="text-[10px] sm:text-[11px] font-bold text-[#FACC15] uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-yellow-400/15 border border-yellow-400/30">
+              <span className="text-[10px] sm:text-[11px] font-bold text-yellow-800 dark:text-[#FACC15] uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-yellow-400/20 border border-yellow-400/30">
                 {currentFact.tag}
               </span>
-              <span className="text-xs sm:text-sm font-bold text-white">
+              <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">
                 {currentFact.title}
               </span>
             </div>
-            <p className="text-sm sm:text-base text-slate-100 font-medium leading-relaxed italic">
+            <p className="text-sm sm:text-base text-slate-700 dark:text-slate-100 font-medium leading-relaxed italic">
               {currentFact.text}
             </p>
           </div>
 
           {/* Animated Gradient Progress Bar with Live Scan Stage */}
           <div className="space-y-2 pt-1">
-            <div className="flex items-center justify-between text-xs text-slate-300">
-              <span className="font-medium text-amber-300 flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse inline-block" />
+            <div className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-300">
+              <span className="font-medium text-amber-700 dark:text-amber-300 flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse inline-block" />
                 {elapsedSeconds < 15
                   ? 'Connecting to carrier network & validating lane...'
                   : elapsedSeconds < 40
@@ -768,17 +768,17 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({
                   ? 'Verifying dimensional tariffs & carrier liability...'
                   : 'Finalizing lowest guaranteed carrier rates & markup matrix...'}
               </span>
-              <span className="text-emerald-400 font-medium flex items-center gap-1.5 shrink-0 ml-2">
+              <span className="text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1.5 shrink-0 ml-2">
                 <ShieldCheck className="w-4 h-4" /> Direct Execution
               </span>
             </div>
-            <div className="w-full bg-slate-900 rounded-full h-2.5 overflow-hidden relative border border-white/[0.08]">
+            <div className="w-full bg-slate-200 dark:bg-slate-900 rounded-full h-2.5 overflow-hidden relative border border-slate-300 dark:border-white/[0.08]">
               <div
-                className="h-full bg-gradient-to-r from-[#FACC15] via-yellow-200 to-[#38BDF8] rounded-full transition-all duration-1000 ease-out"
+                className="h-full bg-gradient-to-r from-yellow-400 via-amber-300 to-sky-400 rounded-full transition-all duration-1000 ease-out"
                 style={{ width: `${Math.min(98, Math.max(6, Math.round((elapsedSeconds / 120) * 100)))}%` }}
               />
             </div>
-            <div className="flex items-center justify-between text-[11px] text-slate-400 pt-0.5">
+            <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 pt-0.5">
               <span>Scanning up to 30+ top North American freight carriers</span>
               <span>120s deep tariff scan window</span>
             </div>
@@ -787,12 +787,12 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({
       )}
 
       {/* 120s Lane Scan Notice & Carrier Tariff Guarantee Note */}
-      <div className="p-3.5 sm:p-4 rounded-xl bg-blue-950/25 border border-sky-500/25 text-xs text-slate-300 space-y-1.5 leading-relaxed">
-        <div className="flex items-center space-x-2 text-[#38BDF8] font-bold uppercase tracking-wider text-[11px]">
+      <div className="p-3.5 sm:p-4 rounded-xl bg-sky-50 dark:bg-blue-950/25 border border-sky-200 dark:border-sky-500/25 text-xs text-slate-700 dark:text-slate-300 space-y-1.5 leading-relaxed">
+        <div className="flex items-center space-x-2 text-sky-700 dark:text-[#38BDF8] font-bold uppercase tracking-wider text-[11px]">
           <Clock className="w-3.5 h-3.5 shrink-0" />
           <span>Carrier Rating Engine Notice &bull; Real-Time Tariff Scan</span>
         </div>
-        <p className="text-slate-300">
+        <p className="text-slate-600 dark:text-slate-300">
           Some freight lanes (including remote terminals, cross-border US-Canada routes, and interline service points) can take up to <strong>120 seconds</strong> to aggregate certified rate quotes from all 30+ carrier systems. We keep scanning until the lowest rates and earliest transit times are retrieved.
         </p>
       </div>

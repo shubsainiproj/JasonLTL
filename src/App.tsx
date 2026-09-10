@@ -220,8 +220,8 @@ export default function App() {
         onOpenLegal={(tab) => setLegalModalTab(tab)}
       />
 
-      {/* Main Content Area: Spacious, Breathable, Not Congested */}
-      <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-8 py-8 sm:py-12 space-y-8">
+      {/* Main Content Area: Responsive at all zoom levels (70% - 200%) */}
+      <main className="flex-1 max-w-7xl mx-auto w-full px-3 sm:px-6 md:px-8 py-6 sm:py-10 space-y-8 overflow-x-hidden">
         {/* Auth status banner if triggered */}
         {authBanner && (
           <div
@@ -252,15 +252,15 @@ export default function App() {
         {/* Minimalist Spacious Hero Branding */}
         {!quoteResult && (
           <div className="max-w-4xl mx-auto text-center space-y-3 pt-2 pb-2">
-            <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-yellow-400/10 border border-yellow-400/25 text-[#FACC15] text-xs font-bold uppercase tracking-wider">
+            <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-yellow-400/15 border border-yellow-400/30 text-yellow-800 dark:text-[#FACC15] text-xs font-bold uppercase tracking-wider">
               <Sparkles className="w-3.5 h-3.5" />
               <span>Direct North American Logistics</span>
             </div>
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-white leading-tight">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-slate-900 dark:text-white leading-tight">
               Instant LTL Freight Quoting &amp; Dispatch
             </h1>
-            <p className="text-sm sm:text-base text-slate-300 max-w-2xl mx-auto font-normal leading-relaxed">
-              Direct terminal tariffs across 30+ top North American freight carriers. <span className="text-[#38BDF8] font-medium">Guaranteed door-to-door pricing</span> with zero double brokering.
+            <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300 max-w-2xl mx-auto font-normal leading-relaxed">
+              Direct terminal tariffs across 30+ top North American freight carriers. <span className="text-sky-700 dark:text-[#38BDF8] font-semibold">Guaranteed door-to-door pricing</span> with zero double brokering.
             </p>
           </div>
         )}
@@ -288,123 +288,123 @@ export default function App() {
 
             {/* THE JASON LTL COMMITMENT: Sophisticated Minimalism & Glassism */}
             <section className="w-full max-w-5xl mx-auto pt-10 space-y-6">
-              <div className="glass p-7 sm:p-10 rounded-2xl border border-white/[0.08] space-y-7 shadow-2xl relative overflow-hidden">
+              <div className="glass p-7 sm:p-10 rounded-2xl border border-slate-200 dark:border-white/[0.08] space-y-7 shadow-xl relative overflow-hidden bg-white/90 dark:bg-[#0B0F17]/90">
                 
                 {/* Header with Badges */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/[0.08] pb-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-white/[0.08] pb-6">
                   <div className="space-y-1">
-                    <span className="text-xs font-black tracking-widest text-[#FACC15] uppercase flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-[#FACC15] shadow-[0_0_8px_rgba(250,204,21,0.6)]" />
+                    <span className="text-xs font-black tracking-widest text-yellow-700 dark:text-[#FACC15] uppercase flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-yellow-500 shadow-[0_0_8px_rgba(250,204,21,0.6)]" />
                       THE JASON LTL COMMITMENT
                     </span>
-                    <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
+                    <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
                       End-to-End Transportation Solutions Across the US &amp; Canada
                     </h2>
                   </div>
-                  <div className="flex items-center space-x-2 text-xs text-emerald-400 font-bold bg-emerald-950/30 border border-emerald-500/30 px-3.5 py-1.5 rounded-full w-fit">
+                  <div className="flex items-center space-x-2 text-xs text-emerald-700 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-300 dark:border-emerald-500/30 px-3.5 py-1.5 rounded-full w-fit">
                     <ShieldCheck className="w-4 h-4" />
                     <span>Direct Execution</span>
                   </div>
                 </div>
 
                 {/* Core Ethos Quote Card */}
-                <div className="p-6 rounded-xl bg-[#080B12]/80 border-l-4 border-[#FACC15] border-t border-r border-b border-white/[0.06] text-slate-100 text-sm sm:text-base italic leading-relaxed shadow-lg">
+                <div className="p-6 rounded-xl bg-slate-50 dark:bg-[#080B12]/80 border-l-4 border-yellow-500 border-t border-r border-b border-slate-200 dark:border-white/[0.06] text-slate-800 dark:text-slate-100 text-sm sm:text-base italic leading-relaxed shadow-sm">
                   &ldquo;Freight is easy when everything goes right. The real value comes when challenges arise. That&rsquo;s where we deliver. No double brokering. No ghost carriers. No excuses. Just reliable freight execution and consistent communication. If it moves, we can move it.&rdquo;
                 </div>
 
                 {/* 6 Capabilities Glass Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
                   {/* 1. Container Drayage */}
-                  <div className="p-5 rounded-xl bg-white/[0.02] border border-white/[0.07] hover:border-yellow-400/30 transition-all duration-200 space-y-2 group">
-                    <div className="w-10 h-10 rounded-lg bg-yellow-400/10 border border-yellow-400/25 flex items-center justify-center text-[#FACC15]">
+                  <div className="p-5 rounded-xl bg-slate-50/80 dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.07] hover:border-yellow-400/60 dark:hover:border-yellow-400/30 transition-all duration-200 space-y-2 group">
+                    <div className="w-10 h-10 rounded-lg bg-yellow-400/15 border border-yellow-400/30 flex items-center justify-center text-yellow-700 dark:text-[#FACC15]">
                       <Anchor className="w-5 h-5" />
                     </div>
-                    <h3 className="text-sm font-bold text-white group-hover:text-[#FACC15] transition-colors">
+                    <h3 className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-yellow-600 dark:group-hover:text-[#FACC15] transition-colors">
                       Container Drayage
                     </h3>
-                    <p className="text-xs text-slate-400 leading-relaxed">
+                    <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
                       Direct ocean port &amp; rail ramp recovery with fast chassis turnaround across all major hubs.
                     </p>
                   </div>
 
                   {/* 2. OTR Freight */}
-                  <div className="p-5 rounded-xl bg-white/[0.02] border border-white/[0.07] hover:border-yellow-400/30 transition-all duration-200 space-y-2 group">
-                    <div className="w-10 h-10 rounded-lg bg-sky-400/10 border border-sky-400/25 flex items-center justify-center text-[#38BDF8]">
+                  <div className="p-5 rounded-xl bg-slate-50/80 dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.07] hover:border-sky-400/60 dark:hover:border-yellow-400/30 transition-all duration-200 space-y-2 group">
+                    <div className="w-10 h-10 rounded-lg bg-sky-400/15 border border-sky-400/30 flex items-center justify-center text-sky-700 dark:text-[#38BDF8]">
                       <Truck className="w-5 h-5" />
                     </div>
-                    <h3 className="text-sm font-bold text-white group-hover:text-[#38BDF8] transition-colors">
+                    <h3 className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-sky-600 dark:group-hover:text-[#38BDF8] transition-colors">
                       OTR Freight
                     </h3>
-                    <p className="text-xs text-slate-400 leading-relaxed">
+                    <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
                       FTL, PTL, LTL, and hotshot expedited coverage nationwide with real-time tracking milestones.
                     </p>
                   </div>
 
                   {/* 3. HazMat Certified */}
-                  <div className="p-5 rounded-xl bg-white/[0.02] border border-white/[0.07] hover:border-yellow-400/30 transition-all duration-200 space-y-2 group">
-                    <div className="w-10 h-10 rounded-lg bg-amber-400/10 border border-amber-400/25 flex items-center justify-center text-amber-400">
+                  <div className="p-5 rounded-xl bg-slate-50/80 dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.07] hover:border-amber-400/60 dark:hover:border-yellow-400/30 transition-all duration-200 space-y-2 group">
+                    <div className="w-10 h-10 rounded-lg bg-amber-400/15 border border-amber-400/30 flex items-center justify-center text-amber-700 dark:text-amber-400">
                       <Flame className="w-5 h-5" />
                     </div>
-                    <h3 className="text-sm font-bold text-white group-hover:text-amber-300 transition-colors">
+                    <h3 className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-300 transition-colors">
                       HazMat Certified
                     </h3>
-                    <p className="text-xs text-slate-400 leading-relaxed">
+                    <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
                       Full hazardous materials safety compliance, placards, and certified specialized drivers.
                     </p>
                   </div>
 
                   {/* 4. Temperature-Controlled */}
-                  <div className="p-5 rounded-xl bg-white/[0.02] border border-white/[0.07] hover:border-yellow-400/30 transition-all duration-200 space-y-2 group">
-                    <div className="w-10 h-10 rounded-lg bg-cyan-400/10 border border-cyan-400/25 flex items-center justify-center text-[#00F0FF]">
+                  <div className="p-5 rounded-xl bg-slate-50/80 dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.07] hover:border-cyan-400/60 dark:hover:border-yellow-400/30 transition-all duration-200 space-y-2 group">
+                    <div className="w-10 h-10 rounded-lg bg-cyan-400/15 border border-cyan-400/30 flex items-center justify-center text-cyan-700 dark:text-[#00F0FF]">
                       <Thermometer className="w-5 h-5" />
                     </div>
-                    <h3 className="text-sm font-bold text-white group-hover:text-[#00F0FF] transition-colors">
+                    <h3 className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-cyan-600 dark:group-hover:text-[#00F0FF] transition-colors">
                       Temperature-Controlled
                     </h3>
-                    <p className="text-xs text-slate-400 leading-relaxed">
+                    <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
                       Reefer transport for perishable, ambient, pharmaceutical, and climate-sensitive merchandise.
                     </p>
                   </div>
 
                   {/* 5. Airport Pickups */}
-                  <div className="p-5 rounded-xl bg-white/[0.02] border border-white/[0.07] hover:border-yellow-400/30 transition-all duration-200 space-y-2 group">
-                    <div className="w-10 h-10 rounded-lg bg-sky-400/10 border border-sky-400/25 flex items-center justify-center text-[#38BDF8]">
+                  <div className="p-5 rounded-xl bg-slate-50/80 dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.07] hover:border-sky-400/60 dark:hover:border-yellow-400/30 transition-all duration-200 space-y-2 group">
+                    <div className="w-10 h-10 rounded-lg bg-sky-400/15 border border-sky-400/30 flex items-center justify-center text-sky-700 dark:text-[#38BDF8]">
                       <Plane className="w-5 h-5" />
                     </div>
-                    <h3 className="text-sm font-bold text-white group-hover:text-[#38BDF8] transition-colors">
+                    <h3 className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-sky-600 dark:group-hover:text-[#38BDF8] transition-colors">
                       Airport Pickups
                     </h3>
-                    <p className="text-xs text-slate-400 leading-relaxed">
+                    <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
                       Expedited tarmac-to-dock recovery for urgent domestic and international air cargo dispatches.
                     </p>
                   </div>
 
                   {/* 6. Major Freight Networks */}
-                  <div className="p-5 rounded-xl bg-white/[0.02] border border-white/[0.07] hover:border-yellow-400/30 transition-all duration-200 space-y-2 group">
-                    <div className="w-10 h-10 rounded-lg bg-yellow-400/10 border border-yellow-400/25 flex items-center justify-center text-[#FACC15]">
+                  <div className="p-5 rounded-xl bg-slate-50/80 dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.07] hover:border-yellow-400/60 dark:hover:border-yellow-400/30 transition-all duration-200 space-y-2 group">
+                    <div className="w-10 h-10 rounded-lg bg-yellow-400/15 border border-yellow-400/30 flex items-center justify-center text-yellow-700 dark:text-[#FACC15]">
                       <PackageCheck className="w-5 h-5" />
                     </div>
-                    <h3 className="text-sm font-bold text-white group-hover:text-[#FACC15] transition-colors">
+                    <h3 className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-yellow-600 dark:group-hover:text-[#FACC15] transition-colors">
                       Major Freight Networks
                     </h3>
-                    <p className="text-xs text-slate-400 leading-relaxed">
+                    <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
                       Seamless compliant dispatch for Amazon, Uber Freight, FedEx, DHL, and premier national LTL networks.
                     </p>
                   </div>
                 </div>
 
                 {/* Bottom Trust Pillars */}
-                <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-white/[0.08] text-xs sm:text-sm text-slate-300">
+                <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-slate-200 dark:border-white/[0.08] text-xs sm:text-sm text-slate-600 dark:text-slate-300">
                   <span className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-[#FACC15]" /> No Double Brokering
+                    <Check className="w-4 h-4 text-yellow-600 dark:text-[#FACC15]" /> No Double Brokering
                   </span>
                   <span className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-[#FACC15]" /> No Ghost Carriers
+                    <Check className="w-4 h-4 text-yellow-600 dark:text-[#FACC15]" /> No Ghost Carriers
                   </span>
                   <span className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-[#FACC15]" /> Consistent Milestone Updates
+                    <Check className="w-4 h-4 text-yellow-600 dark:text-[#FACC15]" /> Consistent Milestone Updates
                   </span>
-                  <span className="flex items-center gap-2 text-[#38BDF8] font-bold">
+                  <span className="flex items-center gap-2 text-sky-700 dark:text-[#38BDF8] font-bold">
                     If it moves, we can move it.
                   </span>
                 </div>
@@ -415,15 +415,15 @@ export default function App() {
       </main>
 
       {/* Clean JASON LTL Minimalist Footer */}
-      <footer className="w-full border-t border-white/[0.08] py-6 px-4 text-center text-xs text-slate-400 space-y-3 bg-white/[0.02] dark:bg-[#05070A]/95 mt-auto transition-colors">
+      <footer className="w-full border-t border-slate-200 dark:border-white/[0.08] py-6 px-4 text-center text-xs text-slate-500 dark:text-slate-400 space-y-3 bg-slate-50/80 dark:bg-[#05070A]/95 mt-auto transition-colors">
         <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 text-xs">
-          <span className="font-black text-white uppercase tracking-wider">
-            JASON<span className="text-[#FACC15]">LTL</span> FREIGHT EXCHANGE
+          <span className="font-black text-slate-900 dark:text-white uppercase tracking-wider">
+            JASON<span className="text-yellow-600 dark:text-[#FACC15]">LTL</span> FREIGHT EXCHANGE
           </span>
           <span>&bull;</span>
-          <span className="text-slate-300">United States &amp; Canada Transportation Solutions</span>
+          <span className="text-slate-700 dark:text-slate-300">United States &amp; Canada Transportation Solutions</span>
           <span>&bull;</span>
-          <span className="text-[#38BDF8] font-semibold">Direct Carrier Execution</span>
+          <span className="text-sky-700 dark:text-[#38BDF8] font-semibold">Direct Carrier Execution</span>
         </div>
 
         {/* Legal & Operating Policies Navigation */}

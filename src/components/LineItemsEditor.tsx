@@ -146,17 +146,17 @@ export const LineItemsEditor: React.FC<LineItemsEditorProps> = ({
 
       {/* Header with Title & Add Line button */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-1">
-        <div className="flex items-center space-x-3 text-xs sm:text-sm text-slate-300">
+        <div className="flex items-center space-x-3 text-xs sm:text-sm text-slate-600 dark:text-slate-300">
           <span className="flex items-center gap-1.5">
-            <Layers className="w-4 h-4 text-[#38BDF8]" />
+            <Layers className="w-4 h-4 text-sky-600 dark:text-[#38BDF8]" />
             <span>
-              Total Units: <strong className="text-white font-bold">{totalUnits}</strong>
+              Total Units: <strong className="text-slate-900 dark:text-white font-bold">{totalUnits}</strong>
             </span>
           </span>
-          <span className="text-slate-600">&bull;</span>
+          <span className="text-slate-400 dark:text-slate-600">&bull;</span>
           <span>
             Total Weight:{' '}
-            <strong className="text-[#FACC15] font-bold">
+            <strong className="text-yellow-600 dark:text-[#FACC15] font-bold">
               {Math.round(totalWeightLbs).toLocaleString()}
             </strong>{' '}
             lbs
@@ -175,13 +175,13 @@ export const LineItemsEditor: React.FC<LineItemsEditorProps> = ({
       </div>
 
       {/* Weight Guideline Note Banner */}
-      <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/25 text-amber-200/90 text-xs leading-relaxed">
-        <Info className="w-4 h-4 text-[#FACC15] shrink-0 mt-0.5" />
+      <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/25 text-amber-900 dark:text-amber-200/90 text-xs leading-relaxed shadow-sm">
+        <Info className="w-4 h-4 text-amber-600 dark:text-[#FACC15] shrink-0 mt-0.5" />
         <div>
-          <span className="font-bold text-white uppercase tracking-wider block text-[11px] mb-0.5">
-            Shipment Weight Notice (Total Combined Weight):
+          <span className="font-bold text-amber-950 dark:text-white uppercase tracking-wider block text-[11px] mb-0.5">
+            Shipment Weight Notice (Total Combined Line Item Weight):
           </span>
-          Weight entered is the <strong>TOTAL combined weight</strong> for that line item (not per individual unit/pallet). The system does <strong>not</strong> multiply units &times; weight. For example: If you have <strong>10 Pallets</strong> weighing <strong>15,000 lbs in total</strong>, enter <strong>15,000</strong>.
+          Weight entered is the <strong>TOTAL combined weight</strong> for that line item (not per individual unit or pallet). The system does <strong>not</strong> multiply units &times; weight. For example: If you have <strong>10 Pallets</strong> weighing <strong>15,000 lbs in total</strong>, enter <strong>15,000</strong>.
         </div>
       </div>
 
@@ -199,12 +199,12 @@ export const LineItemsEditor: React.FC<LineItemsEditorProps> = ({
           return (
             <div
               key={item.id || index}
-              className="lineitem-row p-4 sm:p-5 rounded-xl bg-[#0B0F17]/80 border border-white/[0.1] hover:border-white/[0.18] space-y-4 transition-all duration-200 shadow-sm"
+              className="lineitem-row p-4 sm:p-5 rounded-xl bg-slate-50/90 dark:bg-[#0B0F17]/80 border border-slate-200 dark:border-white/[0.1] hover:border-slate-300 dark:hover:border-white/[0.18] space-y-4 transition-all duration-200 shadow-sm"
             >
               {/* Row Top: Index badge, Commodity, Package Type, Delete button */}
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
                 <div className="flex items-center space-x-2 shrink-0">
-                  <span className="w-7 h-7 rounded-lg bg-yellow-400/15 border border-yellow-400/30 text-[#FACC15] font-extrabold text-xs flex items-center justify-center font-mono">
+                  <span className="w-7 h-7 rounded-lg bg-yellow-400/20 border border-yellow-400/40 text-yellow-800 dark:text-[#FACC15] font-extrabold text-xs flex items-center justify-center font-mono">
                     #{index + 1}
                   </span>
                 </div>
@@ -212,13 +212,13 @@ export const LineItemsEditor: React.FC<LineItemsEditorProps> = ({
                 {/* Commodity Description + Excluded Commodities Link */}
                 <div className="commodity lineitem-inputs flex-1 w-full">
                   <div className="flex items-center justify-between mb-1">
-                    <label className="block text-[11px] uppercase font-semibold text-slate-400">
-                      Commodity Description <span className="text-[#FACC15]">*</span>
+                    <label className="block text-[11px] uppercase font-semibold text-slate-600 dark:text-slate-400">
+                      Commodity Description <span className="text-yellow-600 dark:text-[#FACC15]">*</span>
                     </label>
                     <button
                       type="button"
                       onClick={() => setShowExcludedModal(true)}
-                      className="commodity-excluded text-[11px] text-[#38BDF8] hover:text-[#7dd3fc] cursor-pointer"
+                      className="commodity-excluded text-[11px] text-sky-600 dark:text-[#38BDF8] hover:text-sky-700 dark:hover:text-[#7dd3fc] cursor-pointer"
                     >
                       List of <u>excluded commodities</u>
                     </button>
@@ -229,13 +229,13 @@ export const LineItemsEditor: React.FC<LineItemsEditorProps> = ({
                     placeholder="e.g. Commercial Machinery, Auto Parts, Electronics, Raw Plastics"
                     value={item.commodity}
                     onChange={(e) => updateItem(index, 'commodity', e.target.value)}
-                    className="glass-input w-full px-3.5 py-2.5 rounded-lg text-sm placeholder-slate-500 font-medium tracking-wide"
+                    className="glass-input w-full px-3.5 py-2.5 rounded-lg text-sm placeholder-slate-400 dark:placeholder-slate-500 font-medium tracking-wide"
                   />
                 </div>
 
                 {/* Packaging Type */}
                 <div className="w-full sm:w-48 shrink-0">
-                  <label className="block text-[11px] uppercase font-semibold text-slate-400 mb-1">
+                  <label className="block text-[11px] uppercase font-semibold text-slate-600 dark:text-slate-400 mb-1">
                     Packaging Type
                   </label>
                   <select
@@ -244,7 +244,7 @@ export const LineItemsEditor: React.FC<LineItemsEditorProps> = ({
                     className="glass-input w-full px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer"
                   >
                     {packageTypes.map((pt) => (
-                      <option key={pt} value={pt} className="bg-[#0A0C10] text-white">
+                      <option key={pt} value={pt} className="bg-white dark:bg-[#0A0C10] text-slate-900 dark:text-white">
                         {pt}
                       </option>
                     ))}
@@ -255,7 +255,7 @@ export const LineItemsEditor: React.FC<LineItemsEditorProps> = ({
                 <button
                   type="button"
                   onClick={() => removeLine(index)}
-                  className="text-slate-500 hover:text-rose-400 p-2 rounded-lg hover:bg-white/[0.06] transition-colors self-end sm:self-center mt-3 sm:mt-0 cursor-pointer"
+                  className="text-slate-400 hover:text-rose-600 dark:text-slate-500 dark:hover:text-rose-400 p-2 rounded-lg hover:bg-slate-200/60 dark:hover:bg-white/[0.06] transition-colors self-end sm:self-center mt-3 sm:mt-0 cursor-pointer"
                   title={items.length > 1 ? 'Delete line item' : 'Clear line item'}
                 >
                   <Trash2 className="w-4 h-4" />
@@ -266,8 +266,8 @@ export const LineItemsEditor: React.FC<LineItemsEditorProps> = ({
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 text-xs pt-1">
                 {/* Units */}
                 <div className="hucount lineitem-inputs">
-                  <label className="block text-[11px] uppercase font-semibold text-slate-400 mb-1">
-                    Units <span className="text-[#FACC15]">*</span>
+                  <label className="block text-[11px] uppercase font-semibold text-slate-600 dark:text-slate-400 mb-1">
+                    Units <span className="text-yellow-600 dark:text-[#FACC15]">*</span>
                   </label>
                   <input
                     type="number"
@@ -283,15 +283,15 @@ export const LineItemsEditor: React.FC<LineItemsEditorProps> = ({
                 {/* Weight + Unit (Total combined weight) */}
                 <div className="weight lineitem-inputs">
                   <div className="flex items-center justify-between mb-1">
-                    <label className="text-[11px] uppercase font-semibold text-slate-400" title="Total weight of all units in this line item">
-                      Total Wt <span className="text-[#FACC15]">*</span>
+                    <label className="text-[11px] uppercase font-semibold text-slate-600 dark:text-slate-400" title="Total weight of all units in this line item">
+                      Total Wt <span className="text-yellow-600 dark:text-[#FACC15]">*</span>
                     </label>
                     <button
                       type="button"
                       onClick={() =>
                         updateItem(index, 'weightUnit', item.weightUnit === 'lbs' ? 'kg' : 'lbs')
                       }
-                      className="text-[10px] font-bold text-[#38BDF8] hover:underline cursor-pointer"
+                      className="text-[10px] font-bold text-sky-600 dark:text-[#38BDF8] hover:underline cursor-pointer"
                     >
                       [{item.weightUnit.toUpperCase()}]
                     </button>
@@ -310,7 +310,7 @@ export const LineItemsEditor: React.FC<LineItemsEditorProps> = ({
                 {/* Dimensions (Length x Width x Height) */}
                 <div className="dimensions lineitem-inputs col-span-2 sm:col-span-2 md:col-span-2">
                   <div className="flex items-center justify-between mb-1">
-                    <label className="text-[11px] uppercase font-semibold text-slate-400">
+                    <label className="text-[11px] uppercase font-semibold text-slate-600 dark:text-slate-400">
                       Dimensions: L &times; W &times; H ({item.dimUnit})
                     </label>
                     <button
@@ -318,7 +318,7 @@ export const LineItemsEditor: React.FC<LineItemsEditorProps> = ({
                       onClick={() =>
                         updateItem(index, 'dimUnit', item.dimUnit === 'in' ? 'cm' : 'in')
                       }
-                      className="text-[10px] font-bold text-[#38BDF8] hover:underline cursor-pointer"
+                      className="text-[10px] font-bold text-sky-600 dark:text-[#38BDF8] hover:underline cursor-pointer"
                     >
                       [{item.dimUnit.toUpperCase()}]
                     </button>
@@ -332,7 +332,7 @@ export const LineItemsEditor: React.FC<LineItemsEditorProps> = ({
                       onChange={(e) => handleNumberInput(index, 'length', e.target.value, false)}
                       className="glass-input w-1/3 px-2 py-2 rounded-lg text-sm text-center font-medium"
                     />
-                    <span className="text-slate-500 font-bold">&times;</span>
+                    <span className="text-slate-400 dark:text-slate-500 font-bold">&times;</span>
                     <input
                       type="number"
                       min="1"
@@ -341,7 +341,7 @@ export const LineItemsEditor: React.FC<LineItemsEditorProps> = ({
                       onChange={(e) => handleNumberInput(index, 'width', e.target.value, false)}
                       className="glass-input w-1/3 px-2 py-2 rounded-lg text-sm text-center font-medium"
                     />
-                    <span className="text-slate-500 font-bold">&times;</span>
+                    <span className="text-slate-400 dark:text-slate-500 font-bold">&times;</span>
                     <input
                       type="number"
                       min="1"
@@ -356,14 +356,14 @@ export const LineItemsEditor: React.FC<LineItemsEditorProps> = ({
                 {/* NMFC Freight Class with AUTO CALCULATE */}
                 <div className="nmfc lineitem-inputs">
                   <div className="flex items-center justify-between mb-1">
-                    <label className="text-[11px] uppercase font-semibold text-slate-400">
+                    <label className="text-[11px] uppercase font-semibold text-slate-600 dark:text-slate-400">
                       NMFC Class
                     </label>
                     <button
                       type="button"
                       id={`btn-auto-calc-class-${index}`}
                       onClick={() => handleAutoCalculateClass(index)}
-                      className="auto-calculate-class flex items-center space-x-1 text-[10px] font-bold text-[#FACC15] hover:text-yellow-300 cursor-pointer"
+                      className="auto-calculate-class flex items-center space-x-1 text-[10px] font-bold text-yellow-600 dark:text-[#FACC15] hover:text-yellow-700 dark:hover:text-yellow-300 cursor-pointer"
                       title="Auto calculate freight class from density"
                     >
                       <Sparkles className="w-2.5 h-2.5" />
@@ -376,10 +376,10 @@ export const LineItemsEditor: React.FC<LineItemsEditorProps> = ({
                       updateItem(index, 'nmfcClass', e.target.value);
                       updateItem(index, 'autoCalculatedClass', false);
                     }}
-                    className="glass-input w-full px-2 py-2 rounded-lg text-sm font-semibold cursor-pointer text-[#38BDF8]"
+                    className="glass-input w-full px-2 py-2 rounded-lg text-sm font-semibold cursor-pointer text-sky-700 dark:text-[#38BDF8]"
                   >
                     {nmfcClasses.map((cls) => (
-                      <option key={cls} value={cls} className="bg-[#0A0C10] text-white">
+                      <option key={cls} value={cls} className="bg-white dark:bg-[#0A0C10] text-slate-900 dark:text-white">
                         Class {cls}
                       </option>
                     ))}
@@ -389,15 +389,15 @@ export const LineItemsEditor: React.FC<LineItemsEditorProps> = ({
                 {/* Density Metric & Auto-calc Status */}
                 <div>
                   <div className="flex items-center justify-between mb-1">
-                    <label className="text-[11px] uppercase font-semibold text-slate-400">
+                    <label className="text-[11px] uppercase font-semibold text-slate-600 dark:text-slate-400">
                       Density
                     </label>
                     {item.autoCalculatedClass !== false && densityPcf !== null && (
-                      <span className="text-[9px] font-mono text-emerald-400 font-bold">Auto</span>
+                      <span className="text-[9px] font-mono text-emerald-600 dark:text-emerald-400 font-bold">Auto</span>
                     )}
                   </div>
                   <div
-                    className="glass-subtle w-full px-2 py-2 rounded-lg text-xs font-mono font-bold text-center text-slate-300 border border-white/[0.08]"
+                    className="glass-subtle w-full px-2 py-2 rounded-lg text-xs font-mono font-bold text-center text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-white/[0.08]"
                     title={
                       densityPcf !== null
                         ? `${densityDisplay} → Standard NMFTA Class ${suggestedClass}`

@@ -1,8 +1,9 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
 :root {
   --bg: #05070A;
-  --bg-card: rgba(13, 18, 28, 0.7);
+  --bg-card: rgba(13, 18, 28, 0.75);
   --yellow-primary: #FACC15;
   --yellow-hover: #FDE047;
   --neon-blue: #38BDF8;
@@ -17,19 +18,19 @@
 }
 
 :root[data-theme="light"], .light {
-  --bg: #F1F5F9;
-  --bg-card: rgba(255, 255, 255, 0.96);
+  --bg: #F8FAFC;
+  --bg-card: rgba(255, 255, 255, 0.98);
   --yellow-primary: #EAB308;
   --yellow-hover: #CA8A04;
   --neon-blue: #0284C7;
   --neon-cyan: #0891B2;
-  --glass: rgba(255, 255, 255, 0.85);
+  --glass: rgba(255, 255, 255, 0.95);
   --glass-border: rgba(15, 23, 42, 0.12);
   --glass-border-focus: rgba(234, 179, 8, 0.5);
   --text-dim: #475569;
   --text-muted: #64748B;
   --text-bright: #0F172A;
-  --navbar-bg: rgba(255, 255, 255, 0.95);
+  --navbar-bg: rgba(255, 255, 255, 0.96);
 }
 
 @layer base {
@@ -40,20 +41,20 @@
     min-height: 100vh;
     overflow-x: hidden;
     letter-spacing: -0.01em;
-    transition: background-color 0.25s ease, color 0.25s ease;
+    transition: background-color 0.2s ease, color 0.2s ease;
   }
 }
 
-/* Light mode overrides */
+/* Light mode overrides - Pure white frosted glass, no dark boxes */
 .light body {
   background-color: #F8FAFC;
   color: #0F172A;
 }
 
 .light .glass {
-  background: rgba(255, 255, 255, 0.96) !important;
+  background: rgba(255, 255, 255, 0.98) !important;
   border-color: rgba(15, 23, 42, 0.1) !important;
-  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.06) !important;
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05) !important;
 }
 
 .light .glass-input {
@@ -69,14 +70,15 @@
 }
 
 .light .glass-subtle {
-  background: rgba(241, 245, 249, 0.9) !important;
+  background: rgba(248, 250, 252, 0.9) !important;
   border-color: rgba(15, 23, 42, 0.1) !important;
+  color: #334155 !important;
 }
 
 .light .lineitem-row {
   background: #FFFFFF !important;
   border-color: rgba(15, 23, 42, 0.12) !important;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05) !important;
+  box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.04) !important;
 }
 
 .light .text-white {
@@ -101,8 +103,9 @@
 }
 
 .light header {
-  background: rgba(255, 255, 255, 0.95) !important;
+  background: rgba(255, 255, 255, 0.97) !important;
   border-color: rgba(15, 23, 42, 0.1) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
 }
 
 .light footer {
@@ -115,7 +118,7 @@
   color: #0F172A !important;
 }
 
-/* Minimalist Glassmorphic Panels */
+/* Glassmorphism primitives */
 .glass {
   background: var(--bg-card);
   backdrop-filter: blur(16px);
@@ -132,23 +135,51 @@
   border-radius: 12px;
 }
 
-.glass-yellow {
-  background: rgba(250, 204, 21, 0.03);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(250, 204, 21, 0.18);
-  border-radius: 14px;
+/* Subcontainers for Accessorials, Line Items, Summary Boxes */
+.glass-subcard {
+  background: rgba(248, 250, 252, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+}
+.dark .glass-subcard {
+  background: rgba(11, 15, 23, 0.65);
+  border-color: rgba(255, 255, 255, 0.08);
 }
 
-.glass-neon {
-  background: rgba(56, 189, 248, 0.03);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(56, 189, 248, 0.18);
-  border-radius: 14px;
+/* Options / Checkbox Items */
+.glass-option-item {
+  background: #FFFFFF;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  color: #1E293B;
+  transition: all 0.15s ease;
+}
+.glass-option-item:hover {
+  background: #F1F5F9;
+  border-color: rgba(15, 23, 42, 0.18);
+}
+.dark .glass-option-item {
+  background: rgba(255, 255, 255, 0.02);
+  border-color: rgba(255, 255, 255, 0.06);
+  color: #CBD5E1;
+}
+.dark .glass-option-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.12);
 }
 
-/* Spacious, Breathable Form Inputs */
+.glass-option-active {
+  background: rgba(250, 204, 21, 0.16) !important;
+  border-color: rgba(234, 179, 8, 0.6) !important;
+  color: #0F172A !important;
+}
+.dark .glass-option-active {
+  background: rgba(250, 204, 21, 0.15) !important;
+  border-color: rgba(250, 204, 21, 0.45) !important;
+  color: #FFFFFF !important;
+}
+
+/* Standard Glass Input */
 .glass-input {
   background: rgba(8, 11, 18, 0.85);
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -189,19 +220,30 @@
 /* Minimal Tag System */
 .tag {
   font-size: 11px;
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(15, 23, 42, 0.05);
   padding: 3px 8px;
   border-radius: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  color: #CBD5E1;
-  font-weight: 500;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  color: #334155;
+  font-weight: 600;
   display: inline-flex;
   align-items: center;
   gap: 5px;
   white-space: nowrap;
 }
+.dark .tag {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
+  color: #CBD5E1;
+}
 
 .tag-yellow {
+  background: rgba(250, 204, 21, 0.15);
+  color: #854D0E;
+  border-color: rgba(234, 179, 8, 0.35);
+  font-weight: 700;
+}
+.dark .tag-yellow {
   background: rgba(250, 204, 21, 0.1);
   color: #FACC15;
   border-color: rgba(250, 204, 21, 0.3);
@@ -209,6 +251,12 @@
 }
 
 .tag-neon {
+  background: rgba(56, 189, 248, 0.12);
+  color: #0284C7;
+  border-color: rgba(56, 189, 248, 0.35);
+  font-weight: 700;
+}
+.dark .tag-neon {
   background: rgba(56, 189, 248, 0.1);
   color: #38BDF8;
   border-color: rgba(56, 189, 248, 0.3);
@@ -221,12 +269,19 @@
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #05070A;
+  background: transparent;
 }
-::-webkit-scrollbar-thumb {
+.light ::-webkit-scrollbar-thumb {
+  background: rgba(15, 23, 42, 0.15);
+  border-radius: 999px;
+}
+.light ::-webkit-scrollbar-thumb:hover {
+  background: rgba(15, 23, 42, 0.3);
+}
+.dark ::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.15);
   border-radius: 999px;
 }
-::-webkit-scrollbar-thumb:hover {
+.dark ::-webkit-scrollbar-thumb:hover {
   background: rgba(250, 204, 21, 0.4);
 }
